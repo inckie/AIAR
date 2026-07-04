@@ -4,15 +4,22 @@ import uuid
 import random
 from typing import Dict, Any
 from .scene_manager import SceneManager
-from .models import Entity, Components, TransformComponent, MeshComponent, MaterialComponent
+from .models import (
+    Entity,
+    Components,
+    TransformComponent,
+    MeshComponent,
+    MaterialComponent,
+)
 from .logger import get_logger
 
 logger = get_logger()
 
+
 class AbstractCommandProcessor(abc.ABC):
     def __init__(self, scene_manager: SceneManager):
         self.scene_manager = scene_manager
-        
+
     @abc.abstractmethod
     def process(self, text: str, context: Dict[str, Any]) -> str:
         """
@@ -21,17 +28,19 @@ class AbstractCommandProcessor(abc.ABC):
         """
         pass
 
+
 class BaseAIBackend(AbstractCommandProcessor):
     def __init__(self, scene_manager: SceneManager, mcp_server: Any, ai_service: Any):
         super().__init__(scene_manager)
         self.mcp_server = mcp_server
         self.ai_service = ai_service
 
+
 class OpenAIBackend(BaseAIBackend):
     async def process_async(self, text: str, context: Dict[str, Any]) -> str:
         head = context.get("head", {})
         intersection = context.get("intersection", {})
-        
+
         system_prompt = (
             "You are an AI assistant integrated into a 3D AR prototyping engine (AIAR). "
             "You have access to tools that manipulate the 3D scene graph. "
@@ -40,7 +49,7 @@ class OpenAIBackend(BaseAIBackend):
             "When adding an object based on where the user is pointing, use the intersection point. "
             "Otherwise, spawn it 1.5 units in front of the user's head."
         )
-        
+
         user_prompt = (
             f"Voice Command: '{text}'\n"
             f"Spatial Context:\n"
@@ -49,12 +58,14 @@ class OpenAIBackend(BaseAIBackend):
             f"- Controller Intersection Point: {intersection.get('point', 'None')}\n"
             f"- Intersection Mesh Name: {intersection.get('meshName', 'None')}\n"
         )
-        
+
         try:
             logger.info("AI", "Invoking remote AI model with tool calling.")
-            
-            response = await self.ai_service.invoke_remote_model_with_tools(system_prompt, user_prompt, self.mcp_server)
-            
+
+            response = await self.ai_service.invoke_remote_model_with_tools(
+                system_prompt, user_prompt, self.mcp_server
+            )
+
             logger.info("AI", f"Remote AI model returned response: {response}")
             return response
         except Exception as e:
@@ -63,29 +74,31 @@ class OpenAIBackend(BaseAIBackend):
 
     def process(self, text: str, context: Dict[str, Any]) -> str:
         import asyncio
+
         return asyncio.run(self.process_async(text, context))
+
 
 class HardcodedCommandProcessor(AbstractCommandProcessor):
     def process(self, text: str, context: Dict[str, Any]) -> str:
         text = text.lower()
-        
+
         # Determine spawn position
         head = context.get("head", {})
         h_pos = head.get("position", [0, 1.6, 0])
         h_dir = head.get("direction", [0, 0, 1])
-        
+
         spawn_pos = [
             h_pos[0] + h_dir[0] * 1.5,
             h_pos[1] + h_dir[1] * 1.5,
-            h_pos[2] + h_dir[2] * 1.5
+            h_pos[2] + h_dir[2] * 1.5,
         ]
-        
+
         intersection = context.get("intersection")
         target_mesh_name = None
         if intersection and intersection.get("point"):
             spawn_pos = intersection["point"]
             target_mesh_name = intersection.get("meshName")
-        
+
         # Intent: UNDO
         if "undo" in text:
             if self.scene_manager.undo():
@@ -98,32 +111,32 @@ class HardcodedCommandProcessor(AbstractCommandProcessor):
             if shape:
                 entity_id = f"{shape}_{uuid.uuid4().hex[:6]}"
                 color = [random.random(), random.random(), random.random()]
-                
+
                 # Nudge up slightly so it doesn't clip into the ground
                 spawn_pos[1] += 0.2
-                
+
                 props = {"size": 0.4} if shape == "box" else {"diameter": 0.4}
-                
+
                 entity = Entity(
                     id=entity_id,
                     name=entity_id,
                     components=Components(
                         transform=TransformComponent(position=spawn_pos),
                         mesh=MeshComponent(type=shape, properties=props),
-                        material=MaterialComponent(diffuse=color)
-                    )
+                        material=MaterialComponent(diffuse=color),
+                    ),
                 )
                 self.scene_manager.add_entity(entity)
                 return f"Added {shape}."
             return "Could not understand what to add."
-            
+
         # Intent: REMOVE
         if "remove" in text or "delete" in text:
             if "this" in text or "it" in text:
                 if target_mesh_name:
                     if target_mesh_name == "Ground":
                         return "Cannot remove the ground."
-                    
+
                     entity = self.scene_manager.get_entity_by_name(target_mesh_name)
                     if entity:
                         self.scene_manager.remove_entity(entity.id)
@@ -132,13 +145,13 @@ class HardcodedCommandProcessor(AbstractCommandProcessor):
                         return f"Could not find entity {target_mesh_name}."
                 else:
                     return "You are not pointing at anything to remove."
-            
+
             # Remove by explicit name match
             for e in self.scene_manager.scene.entities:
                 if e.name.lower() in text and e.name != "Ground":
                     self.scene_manager.remove_entity(e.id)
                     return f"Removed {e.name}."
-                    
+
             return "Could not understand what to remove."
 
         return "Command not recognized."

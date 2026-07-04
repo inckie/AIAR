@@ -258,6 +258,37 @@
           ]
         }
       }
+    },
+    {
+      "id": "GreenBox_bf2874",
+      "name": "GreenBox",
+      "components": {
+        "transform": {
+          "position": [
+            10.0,
+            10.0,
+            10.0
+          ],
+          "rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scaling": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "mesh": {
+          "type": "box",
+          "properties": {
+            "size": 2.0
+          }
+        },
+        "light": null,
+        "material": null
+      }
     }
   ]
 }

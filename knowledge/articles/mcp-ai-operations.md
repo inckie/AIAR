@@ -3,7 +3,7 @@ categories:
 - system-architecture
 created: '2026-07-04T05:38:36.882269+00:00'
 id: mcp-ai-operations
-modified: '2026-07-04T05:39:48.963013+00:00'
+modified: '2026-07-04T06:19:52.977267+00:00'
 tags:
 - skill
 - ai
@@ -26,15 +26,19 @@ If you are an AI assistant processing a user's voice command, you are expected t
 
 ### Scene Manipulation Skills
 
-You can manipulate the scene graph dynamically. Entities consist of a `TransformComponent`, a `MeshComponent`, and a `MaterialComponent`.
+You can manipulate the scene graph dynamically. Entities consist of a `TransformComponent`, a `MeshComponent`, `LightComponent`, and a `MaterialComponent`.
 
-*   **`add_object(shape, x, y, z, size, color_r, color_g, color_b)`**
-    *   **Usage:** Spawns a primitive shape at the specified coordinates. (See [[supported-scene-objects|Supported Scene Objects]] for a list of known shapes and components).
+*   **`create_entity(name, components_json)`**
+    *   **Usage:** Spawns a custom entity using a JSON payload. The payload can define transform, mesh, material, and light properties.
+    *   **Example JSON:** `{"transform": {"position": [0,1,0]}, "mesh": {"type": "box", "properties": {"size": 0.4}}, "material": {"diffuse": [1,0,0]}}`
     *   **Skill:** Use the user's spatial context (e.g., controller intersection point) to accurately place the object.
+*   **`update_entity(entity_id, components_json)`**
+    *   **Usage:** Updates specific components of an existing object via JSON deep merge. Only the provided properties will be modified. To remove a component entirely, pass `null` for it.
+    *   **Skill:** Use this to move an object, resize it, change its color, or strip/add components without deleting and recreating it.
 *   **`remove_object(entity_id)`**
     *   **Usage:** Deletes an entity from the scene by its exact ID.
 *   **`undo_last_action()`**
-    *   **Usage:** Reverts the scene to the state before the most recent addition or removal.
+    *   **Usage:** Reverts the scene to the state before the most recent addition, removal, or update.
 *   **`get_scene()`**
     *   **Usage:** Fetches the entire declarative JSON scene graph for inspection.
 
@@ -51,5 +55,5 @@ AI agents should actively monitor the system health, verify the outcomes of thei
 ## Execution Flow
 
 1.  **Context Injection:** When you receive a prompt, it will contain the user's spoken command and their immediate spatial context (where their headset is looking, and where their VR hand controllers are pointing).
-2.  **Tool Selection:** Decide which MCP tool best fulfills the intent. For example, if the user points at the floor and says "Put a tree there," use `add_object` at the provided intersection point.
+2.  **Tool Selection:** Decide which MCP tool best fulfills the intent. For example, if the user points at the floor and says "Put a tree there," use `create_entity` at the provided intersection point.
 3.  **Validation:** Call `log_tail` if necessary to confirm the system recorded the change successfully.

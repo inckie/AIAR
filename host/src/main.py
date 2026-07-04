@@ -66,18 +66,63 @@ if not os.path.exists(ffmpeg_alias_path):
 os.environ["PATH"] = ffmpeg_alias_dir + os.pathsep + os.environ.get("PATH", "")
 
 # Load Whisper model
-print("Loading Whisper model (this may download the model to your ~/.cache/whisper folder the first time)...")
+print(
+    "Loading Whisper model (this may download the model to your ~/.cache/whisper folder the first time)..."
+)
 whisper_model = whisper.load_model("small")
 print("Whisper model loaded.")
+
 
 @app.get("/api/scene")
 def get_scene():
     return scene_manager.get_scene_json()
 
+
+@app.post("/api/scene/entities")
+async def create_entity(request: Request):
+    try:
+        data = await request.json()
+    except Exception:
+        return {"status": "error", "message": "Invalid JSON"}
+
+    try:
+        from .models import Entity
+        import uuid
+
+        if "id" not in data:
+            shape = (
+                data.get("components", {}).get("mesh", {}).get("type", "obj")
+                if isinstance(data.get("components"), dict)
+                and isinstance(data.get("components").get("mesh"), dict)
+                else "obj"
+            )
+            data["id"] = f"{shape}_{uuid.uuid4().hex[:6]}"
+        if "name" not in data:
+            data["name"] = data["id"]
+
+        entity = Entity(**data)
+        scene_manager.add_entity(entity)
+        return {"status": "success", "id": entity.id}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.patch("/api/scene/entities/{entity_id}")
+async def update_entity(entity_id: str, request: Request):
+    try:
+        updates = await request.json()
+    except Exception:
+        updates = {}
+
+    if scene_manager.update_entity(entity_id, updates):
+        return {"status": "success", "message": f"Updated entity {entity_id}"}
+    return {"status": "error", "message": f"Failed to update entity {entity_id}"}
+
+
 @app.post("/api/voice/transcribe")
 async def transcribe_voice(file: UploadFile = File(...), context: str = Form(None)):
     logger.info("Voice", "Received voice command audio.")
-    
+
     # Parse context
     ctx_data = {}
     if context:
@@ -91,14 +136,14 @@ async def transcribe_voice(file: UploadFile = File(...), context: str = Form(Non
     with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp_file:
         temp_file.write(await file.read())
         temp_file_path = temp_file.name
-    
+
     try:
         # load_audio runs ffmpeg (using the bundled imageio-ffmpeg we injected into PATH)
         audio = whisper.load_audio(temp_file_path)
         result = whisper_model.transcribe(temp_file_path, language="en")
         text = result["text"].strip()
         logger.info("Voice", f"Transcribed text: '{text}'")
-        
+
         # Process voice command
         action_response = None
         if text:
@@ -109,7 +154,7 @@ async def transcribe_voice(file: UploadFile = File(...), context: str = Form(Non
             else:
                 action_response = command_processor.process(text, ctx_data)
                 logger.info("Voice", f"Command processor response: {action_response}")
-            
+
         return {"text": text, "action_response": action_response}
     except Exception as e:
         logger.error("Voice", f"Transcription error: {e}")
@@ -117,10 +162,12 @@ async def transcribe_voice(file: UploadFile = File(...), context: str = Form(Non
     finally:
         os.remove(temp_file_path)
 
+
 # API routes can go here
 @app.get("/api/status")
 def read_root():
     return {"status": "AIAR Host is running"}
+
 
 # Serve the compiled frontend engine
 engine_dist_path = os.path.join(os.path.dirname(__file__), "..", "..", "engine", "dist")

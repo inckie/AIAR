@@ -4,10 +4,17 @@ import uuid
 import random
 
 from .scene_manager import SceneManager
-from .models import Entity, Components, TransformComponent, MeshComponent, MaterialComponent
+from .models import (
+    Entity,
+    Components,
+    TransformComponent,
+    MeshComponent,
+    MaterialComponent,
+)
 from .logger import get_logger
 
 logger = get_logger()
+
 
 def create_mcp_server(scene_manager: SceneManager) -> FastMCP:
     """Create an MCP server with tools for AR scene manipulation."""
@@ -25,41 +32,57 @@ def create_mcp_server(scene_manager: SceneManager) -> FastMCP:
     def get_scene() -> str:
         """Get the current scene state as a JSON string."""
         import json
+
         return json.dumps(scene_manager.get_scene_json(), indent=2)
 
     @mcp.tool()
-    def add_object(shape: str, x: float, y: float, z: float, size: float = 0.4, color_r: float = 1.0, color_g: float = 1.0, color_b: float = 1.0) -> str:
+    def create_entity(name: str, components_json: str) -> str:
         """
-        Add a 3D object to the scene.
+        Create a new 3D entity in the scene from a JSON component definition.
         Args:
-            shape: 'box' or 'sphere' (See WikiKnowledge article 'supported-scene-objects' for known objects)
-            x: X position coordinate
-            y: Y position coordinate
-            z: Z position coordinate
-            size: The size of the object (diameter for sphere, width/height for box)
-            color_r: Red channel (0.0 to 1.0)
-            color_g: Green channel (0.0 to 1.0)
-            color_b: Blue channel (0.0 to 1.0)
+            name: A descriptive name for the entity.
+            components_json: A JSON string containing 'transform', 'mesh', 'material', and/or 'light' definitions.
         Returns:
             Confirmation string with the entity ID.
         """
-        if shape not in ["box", "sphere"]:
-            return f"Error: Unsupported shape '{shape}'. Use 'box' or 'sphere'."
-            
-        entity_id = f"{shape}_{uuid.uuid4().hex[:6]}"
-        props = {"size": size} if shape == "box" else {"diameter": size}
-        
-        entity = Entity(
-            id=entity_id,
-            name=entity_id,
-            components=Components(
-                transform=TransformComponent(position=[x, y, z]),
-                mesh=MeshComponent(type=shape, properties=props),
-                material=MaterialComponent(diffuse=[color_r, color_g, color_b])
-            )
-        )
-        scene_manager.add_entity(entity)
-        return f"Added {shape} at [{x}, {y}, {z}] with ID {entity_id}."
+        import json
+
+        try:
+            components_data = json.loads(components_json)
+        except json.JSONDecodeError:
+            return "Error: components_json is not a valid JSON string."
+
+        entity_id = f"{name}_{uuid.uuid4().hex[:6]}"
+        data = {"id": entity_id, "name": name, "components": components_data}
+        try:
+            entity = Entity(**data)
+            scene_manager.add_entity(entity)
+            return f"Created entity '{name}' with ID {entity_id}."
+        except Exception as e:
+            return f"Error validating entity components: {e}"
+
+    @mcp.tool()
+    def update_entity(entity_id: str, components_json: str) -> str:
+        """
+        Update components of an existing 3D entity from a JSON definition.
+        Omit components you don't want to change. Pass null to remove a component.
+        Args:
+            entity_id: The ID of the entity to update.
+            components_json: A JSON string containing updates for 'transform', 'mesh', 'material', etc.
+        Returns:
+            Confirmation string.
+        """
+        import json
+
+        try:
+            components_data = json.loads(components_json)
+        except json.JSONDecodeError:
+            return "Error: components_json is not a valid JSON string."
+
+        updates = {"components": components_data}
+        if scene_manager.update_entity(entity_id, updates):
+            return f"Successfully updated entity '{entity_id}'."
+        return f"Failed to update entity '{entity_id}'."
 
     @mcp.tool()
     def remove_object(entity_id: str) -> str:
@@ -87,7 +110,9 @@ def create_mcp_server(scene_manager: SceneManager) -> FastMCP:
         return "Nothing to undo."
 
     @mcp.tool()
-    def log_tail(limit: int = 50, level: Optional[str] = None, subsystem: Optional[str] = None) -> str:
+    def log_tail(
+        limit: int = 50, level: Optional[str] = None, subsystem: Optional[str] = None
+    ) -> str:
         """
         Fetch the most recent log entries.
         Args:
@@ -98,11 +123,14 @@ def create_mcp_server(scene_manager: SceneManager) -> FastMCP:
             A JSON-formatted string of log entries.
         """
         import json
+
         logs = logger.get_tail(limit, level, subsystem)
         return json.dumps([l.model_dump() for l in logs], indent=2)
 
     @mcp.tool()
-    def log_since(timestamp: float, level: Optional[str] = None, subsystem: Optional[str] = None) -> str:
+    def log_since(
+        timestamp: float, level: Optional[str] = None, subsystem: Optional[str] = None
+    ) -> str:
         """
         Fetch all log entries since a given Unix timestamp.
         Args:
@@ -113,6 +141,7 @@ def create_mcp_server(scene_manager: SceneManager) -> FastMCP:
             A JSON-formatted string of log entries.
         """
         import json
+
         logs = logger.get_since(timestamp, level, subsystem)
         return json.dumps([l.model_dump() for l in logs], indent=2)
 
