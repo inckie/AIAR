@@ -5,6 +5,9 @@ import random
 from typing import Dict, Any
 from .scene_manager import SceneManager
 from .models import Entity, Components, TransformComponent, MeshComponent, MaterialComponent
+from .logger import get_logger
+
+logger = get_logger()
 
 class AbstractCommandProcessor(abc.ABC):
     def __init__(self, scene_manager: SceneManager):
@@ -17,6 +20,50 @@ class AbstractCommandProcessor(abc.ABC):
         Returns a response string to be displayed in the VR HUD.
         """
         pass
+
+class BaseAIBackend(AbstractCommandProcessor):
+    def __init__(self, scene_manager: SceneManager, mcp_server: Any, ai_service: Any):
+        super().__init__(scene_manager)
+        self.mcp_server = mcp_server
+        self.ai_service = ai_service
+
+class OpenAIBackend(BaseAIBackend):
+    async def process_async(self, text: str, context: Dict[str, Any]) -> str:
+        head = context.get("head", {})
+        intersection = context.get("intersection", {})
+        
+        system_prompt = (
+            "You are an AI assistant integrated into a 3D AR prototyping engine (AIAR). "
+            "You have access to tools that manipulate the 3D scene graph. "
+            "The user will give you a voice command, and you must use the provided tools to fulfill it. "
+            "You will be given the user's spatial context (where their head is, where they are pointing). "
+            "When adding an object based on where the user is pointing, use the intersection point. "
+            "Otherwise, spawn it 1.5 units in front of the user's head."
+        )
+        
+        user_prompt = (
+            f"Voice Command: '{text}'\n"
+            f"Spatial Context:\n"
+            f"- Head Position: {head.get('position')}\n"
+            f"- Head Direction: {head.get('direction')}\n"
+            f"- Controller Intersection Point: {intersection.get('point', 'None')}\n"
+            f"- Intersection Mesh Name: {intersection.get('meshName', 'None')}\n"
+        )
+        
+        try:
+            logger.info("AI", "Invoking remote AI model with tool calling.")
+            
+            response = await self.ai_service.invoke_remote_model_with_tools(system_prompt, user_prompt, self.mcp_server)
+            
+            logger.info("AI", f"Remote AI model returned response: {response}")
+            return response
+        except Exception as e:
+            logger.error("AI", f"AI execution failed: {e}")
+            return f"AI Error: {e}"
+
+    def process(self, text: str, context: Dict[str, Any]) -> str:
+        import asyncio
+        return asyncio.run(self.process_async(text, context))
 
 class HardcodedCommandProcessor(AbstractCommandProcessor):
     def process(self, text: str, context: Dict[str, Any]) -> str:

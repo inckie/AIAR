@@ -1,26 +1,57 @@
-from fastapi import FastAPI, UploadFile, File
-from fastapi.staticfiles import StaticFiles
-from fastmcp import FastMCP
-import uvicorn
-import os
-import tempfile
-import shutil
-import whisper
-import imageio_ffmpeg
 import json
-from fastapi import Form
+import tempfile
+import whisper
+import os
+import imageio_ffmpeg
+import shutil
+from fastapi import FastAPI, File, UploadFile, Form, BackgroundTasks, Request
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
+from typing import Dict, Any
+import uvicorn
 from .scene_manager import SceneManager
-from .command_processor import HardcodedCommandProcessor
+from .command_processor import HardcodedCommandProcessor, OpenAIBackend
+from .mcp_server import create_mcp_server
+from .ai_service import AIService
+from .sse import create_sse_server
+from .logger import get_logger
 
-app = FastAPI(title="AIAR Python Host")
-mcp = FastMCP("aiar-host")
+logger = get_logger()
 
-# Initialize SceneManager and Command Processor
-root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+app = FastAPI()
+
+# Allow CORS for local dev
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Initialize core services
+host_dir = os.path.dirname(os.path.dirname(__file__))
+root_dir = os.path.abspath(os.path.join(host_dir, ".."))
 scene_manager = SceneManager(root_dir)
-command_processor = HardcodedCommandProcessor(scene_manager)
 
-# Setup PATH so whisper can find the bundled ffmpeg executable natively
+# Initialize MCP and AI services
+mcp_server = create_mcp_server(scene_manager)
+ai_service = AIService(host_dir=host_dir)
+
+# Mount MCP SSE Server
+sse_app = create_sse_server(mcp_server)
+app.mount("/mcp", sse_app)
+
+# Pick Command Processor
+ai_settings = ai_service.load_settings()
+if ai_settings.get("enabled"):
+    print("AI integration is enabled. Using OpenAIBackend.")
+    command_processor = OpenAIBackend(scene_manager, mcp_server, ai_service)
+else:
+    print("AI integration is disabled. Using HardcodedCommandProcessor.")
+    command_processor = HardcodedCommandProcessor(scene_manager)
+
+# We need to manually tell whisper where ffmpeg is, since it relies on system PATH.
+# We'll prepend the bundled imageio_ffmpeg executable directory to PATH.
 ffmpeg_exe_path = imageio_ffmpeg.get_ffmpeg_exe()
 ffmpeg_alias_dir = os.path.join(tempfile.gettempdir(), "ffmpeg_alias")
 os.makedirs(ffmpeg_alias_dir, exist_ok=True)
@@ -45,12 +76,15 @@ def get_scene():
 
 @app.post("/api/voice/transcribe")
 async def transcribe_voice(file: UploadFile = File(...), context: str = Form(None)):
+    logger.info("Voice", "Received voice command audio.")
+    
     # Parse context
     ctx_data = {}
     if context:
         try:
             ctx_data = json.loads(context)
         except Exception as e:
+            logger.error("Voice", f"Error parsing context: {e}")
             print(f"Error parsing context: {e}")
 
     # Whisper requires a file path or numpy array. We save the uploaded WebM to a temp file.
@@ -63,6 +97,7 @@ async def transcribe_voice(file: UploadFile = File(...), context: str = Form(Non
         audio = whisper.load_audio(temp_file_path)
         result = whisper_model.transcribe(temp_file_path, language="en")
         text = result["text"].strip()
+        logger.info("Voice", f"Transcribed text: '{text}'")
         
         # Process voice command
         action_response = None
@@ -70,11 +105,14 @@ async def transcribe_voice(file: UploadFile = File(...), context: str = Form(Non
             lower_text = text.lower()
             if "exit vr" in lower_text or "exit immersion" in lower_text:
                 action_response = "Exiting VR session..."
+                logger.info("Voice", "Intercepted 'Exit VR' command.")
             else:
                 action_response = command_processor.process(text, ctx_data)
+                logger.info("Voice", f"Command processor response: {action_response}")
             
         return {"text": text, "action_response": action_response}
     except Exception as e:
+        logger.error("Voice", f"Transcription error: {e}")
         return {"error": str(e), "text": ""}
     finally:
         os.remove(temp_file_path)

@@ -2,6 +2,7 @@ import os
 import json
 from typing import Optional
 from .models import Scene, Entity, Components, TransformComponent, MeshComponent, LightComponent, MaterialComponent
+from .logger import get_logger
 
 class SceneManager:
     def __init__(self, root_dir: str):
@@ -75,6 +76,7 @@ class SceneManager:
                 data = json.load(f)
                 self.scene = Scene(**data)
         except Exception as e:
+            get_logger().error("Scene", f"Error loading scene: {e}")
             print(f"Error loading scene: {e}")
             self.scene = Scene()
 
@@ -83,6 +85,7 @@ class SceneManager:
             with open(self.scene_file, "w") as f:
                 json.dump(self.scene.model_dump(), f, indent=2)
         except Exception as e:
+            get_logger().error("Scene", f"Error saving scene: {e}")
             print(f"Error saving scene: {e}")
 
     def get_scene_json(self) -> dict:
@@ -100,19 +103,31 @@ class SceneManager:
         self._push_undo()
         self.scene.entities.append(entity)
         self.save_scene()
+        get_logger().info("Scene", f"Added entity '{entity.id}' ({entity.name})")
 
-    def remove_entity(self, entity_id: str):
+    def remove_entity(self, entity_id: str) -> bool:
         self.load_scene()
+        
+        # Check if entity exists
+        exists = any(e.id == entity_id for e in self.scene.entities)
+        if not exists:
+            get_logger().warning("Scene", f"Failed to remove entity '{entity_id}' (not found)")
+            return False
+            
         self._push_undo()
         self.scene.entities = [e for e in self.scene.entities if e.id != entity_id]
         self.save_scene()
+        get_logger().info("Scene", f"Removed entity '{entity_id}'")
+        return True
 
     def undo(self) -> bool:
         if not self.undo_stack:
+            get_logger().warning("Scene", "Undo failed: Nothing to undo.")
             return False
         prev_state = self.undo_stack.pop()
         self.scene = Scene(**prev_state)
         self.save_scene()
+        get_logger().info("Scene", "Undid last action.")
         return True
 
     def get_entity_by_name(self, name: str) -> Optional[Entity]:

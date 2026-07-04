@@ -3,7 +3,7 @@ categories:
 - system-architecture
 created: '2026-07-04T02:34:41.704822+00:00'
 id: repository-structure
-modified: '2026-07-04T04:44:11.343794+00:00'
+modified: '2026-07-04T05:38:15.336076+00:00'
 tags:
 - architecture
 - structure
@@ -26,19 +26,22 @@ The root directory contains three primary folders:
 
 ```text
 AIAR/
-в”њв”Ђв”Ђ host/                  # Python backend server
-в”њв”Ђв”Ђ engine/                # TypeScript AR/VR engine
-в””в”Ђв”Ђ projects/
-    в””в”Ђв”Ђ default/           # Default VR project data
+РІвЂќСљРІвЂќР‚РІвЂќР‚ host/                  # Python backend server
+РІвЂќСљРІвЂќР‚РІвЂќР‚ engine/                # TypeScript AR/VR engine
+РІвЂќвЂќРІвЂќР‚РІвЂќР‚ projects/
+    РІвЂќвЂќРІвЂќР‚РІвЂќР‚ default/           # Default VR project data
 ```
 
 ### 1. `host/` (Python Backend)
 *   **Tech Stack:** Python 3.13+, initialized via `uv`.
-*   **Dependencies:** `fastapi` (for REST APIs), `uvicorn` (ASGI server), `fastmcp` (for HTTP MCP).
+*   **Dependencies:** `fastapi` (for REST APIs), `uvicorn` (ASGI server), `mcp` (for HTTP MCP integration via `FastMCP`).
 *   **Structure:**
     *   `pyproject.toml` / `uv.lock`: Dependency management.
-    *   `src/main.py`: The application entry point. This file initializes both the FastAPI app and the FastMCP server.
-*   **Purpose:** Orchestrates the system, triggers TS rebuilds, serves the web app, and processes AI commands using the Antigravity SDK.
+    *   `src/main.py`: The application entry point. This file initializes both the FastAPI app and mounts the MCP SSE server.
+    *   `src/mcp_server.py`: Defines the `FastMCP` tools exposed to internal and external AI agents (e.g. `add_object`, `remove_object`, `log_tail`).
+    *   `src/ai_service.py`: Orchestrates OpenAI API compatible LLM requests and maps FastMCP tools into OpenAI functions.
+    *   `src/logger.py`: A centralized in-memory rolling logger tracking 'Voice', 'Scene', and 'AI' subsystems.
+*   **Purpose:** Orchestrates the system, triggers TS rebuilds, serves the web app, and processes AI commands autonomously via LLM bindings.
 
 ### 2. `engine/` (TypeScript Engine)
 *   **Tech Stack:** TypeScript, Babylon.js (`@babylonjs/core`).
