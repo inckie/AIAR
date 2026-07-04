@@ -9,7 +9,8 @@ import {
     Color3,
     DirectionalLight,
     ShadowGenerator,
-    WebXRFeatureName
+    WebXRFeatureName,
+    WebXRState
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button, Grid } from "@babylonjs/gui";
 import * as GUI from "@babylonjs/gui";
@@ -108,6 +109,39 @@ const createScene = async function () {
         let audioChunks: Blob[] = [];
         let voiceBtn: Button | null = null;
 
+        const showVRPopup = (message: string) => {
+            const popup = MeshBuilder.CreatePlane("vrPopup", { width: 1, height: 0.3 }, scene);
+            // Attach to camera so it follows the user's view (HUD style)
+            if (xr.baseExperience.camera) {
+                popup.setParent(xr.baseExperience.camera);
+                // Position it slightly down and forward
+                popup.position = new Vector3(0, -0.4, 0.8);
+                // Rotate to face up towards the user (positive X rotation tilts normal upwards)
+                popup.rotation = new Vector3(Math.PI / 6, 0, 0);
+            }
+            
+            const popupTex = AdvancedDynamicTexture.CreateForMesh(popup);
+            const rect = new GUI.Rectangle();
+            rect.background = "rgba(0,0,0,0.7)";
+            rect.color = "cyan";
+            rect.thickness = 2;
+            
+            const textBlock = new GUI.TextBlock();
+            textBlock.text = message;
+            textBlock.color = "white";
+            textBlock.fontSize = 50;
+            textBlock.textWrapping = true;
+            rect.addControl(textBlock);
+            
+            popupTex.addControl(rect);
+            
+            // Auto-dispose after 5 seconds
+            setTimeout(() => {
+                popup.dispose();
+                popupTex.dispose();
+            }, 5000);
+        };
+
         const toggleRecording = async () => {
             if (!voiceBtn) return;
             if (isRecording) {
@@ -127,10 +161,39 @@ const createScene = async function () {
                         if (e.data.size > 0) audioChunks.push(e.data);
                     };
                     
-                    mediaRecorder.onstop = () => {
+                    mediaRecorder.onstop = async () => {
                         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                        log("Audio recorded: " + audioBlob.size + " bytes");
+                        log("Sending audio: " + audioBlob.size + " bytes");
                         stream.getTracks().forEach(track => track.stop());
+
+                        const formData = new FormData();
+                        formData.append("file", audioBlob, "recording.webm");
+                        
+                        try {
+                            const res = await fetch("/api/voice/transcribe", {
+                                method: "POST",
+                                body: formData
+                            });
+                            const data = await res.json();
+                            if (data.text) {
+                                log("Recognized: " + data.text);
+                                showVRPopup(data.text);
+
+                                // Hardcoded system commands
+                                const txt = data.text.toLowerCase();
+                                if (txt.includes("exit vr") || txt.includes("exit immersion")) {
+                                    setTimeout(() => {
+                                        xr.baseExperience.exitXRAsync();
+                                    }, 1500); // Short delay to let the user read the popup
+                                }
+                            } else if (data.error) {
+                                log("Error: " + data.error);
+                                showVRPopup("Error: " + data.error);
+                            }
+                        } catch (err: any) {
+                            log("Transcribe err: " + err.message);
+                            showVRPopup("Transcribe Error: " + err.message);
+                        }
                     };
                     
                     mediaRecorder.start();
@@ -168,8 +231,8 @@ const createScene = async function () {
                 // Attach to the pointer node which is guaranteed to exist
                 wristMenu.setParent(controller.pointer);
                 
-                // Position it above the controller/hand (restored original location)
-                wristMenu.position = new Vector3(0, 0.15, -0.1);
+                // Position it closer to the hand
+                wristMenu.position = new Vector3(0, 0.05, -0.05);
                 wristMenu.rotation = new Vector3(Math.PI / 4, 0, 0);
 
                 const advancedTexture = AdvancedDynamicTexture.CreateForMesh(wristMenu);
@@ -241,6 +304,16 @@ const createScene = async function () {
                     m.setEnabled(!hasPhysicalController);
                 }
             });
+        });
+
+        // Welcome message on XR entry
+        xr.baseExperience.onStateChangedObservable.add((state) => {
+            if (state === WebXRState.IN_XR) {
+                // Short delay to let camera settle
+                setTimeout(() => {
+                    showVRPopup("Welcome to AIAR! Voice commands ready.");
+                }, 1000);
+            }
         });
 
         log("WebXR initialized successfully.");

@@ -1,11 +1,51 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from fastapi.staticfiles import StaticFiles
 from fastmcp import FastMCP
 import uvicorn
 import os
+import tempfile
+import shutil
+import whisper
+import imageio_ffmpeg
 
 app = FastAPI(title="AIAR Python Host")
 mcp = FastMCP("aiar-host")
+
+# Setup PATH so whisper can find the bundled ffmpeg executable natively
+ffmpeg_exe_path = imageio_ffmpeg.get_ffmpeg_exe()
+ffmpeg_alias_dir = os.path.join(tempfile.gettempdir(), "ffmpeg_alias")
+os.makedirs(ffmpeg_alias_dir, exist_ok=True)
+ffmpeg_alias_path = os.path.join(ffmpeg_alias_dir, "ffmpeg.exe")
+
+if not os.path.exists(ffmpeg_alias_path):
+    try:
+        shutil.copy(ffmpeg_exe_path, ffmpeg_alias_path)
+    except Exception:
+        pass
+
+os.environ["PATH"] = ffmpeg_alias_dir + os.pathsep + os.environ.get("PATH", "")
+
+# Load Whisper model
+print("Loading Whisper model (this may download the model to your ~/.cache/whisper folder the first time)...")
+whisper_model = whisper.load_model("small")
+print("Whisper model loaded.")
+
+@app.post("/api/voice/transcribe")
+async def transcribe_voice(file: UploadFile = File(...)):
+    # Whisper requires a file path or numpy array. We save the uploaded WebM to a temp file.
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp_file:
+        temp_file.write(await file.read())
+        temp_file_path = temp_file.name
+    
+    try:
+        # load_audio runs ffmpeg (using the bundled imageio-ffmpeg we injected into PATH)
+        audio = whisper.load_audio(temp_file_path)
+        result = whisper_model.transcribe(audio)
+        return {"text": result["text"].strip()}
+    except Exception as e:
+        return {"error": str(e), "text": ""}
+    finally:
+        os.remove(temp_file_path)
 
 # API routes can go here
 @app.get("/api/status")
