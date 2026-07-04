@@ -3,7 +3,7 @@ categories:
 - system-architecture
 created: '2026-07-04T02:25:49.440581+00:00'
 id: python-host
-modified: '2026-07-04T04:41:38.063979+00:00'
+modified: '2026-07-04T04:58:00.886193+00:00'
 tags:
 - python
 - backend
@@ -22,7 +22,7 @@ The Python Host serves as the backend foundation for the AIAR prototyping system
 ## Key Responsibilities
 
 1. **Scene State Management:**
-   The backend acts as the absolute source of truth for the 3D scene. A centralized `SceneManager` handles all Pydantic representations of entities and components. It provides a `GET /api/scene` endpoint for the frontend to poll and updates a local `scene.json` file. It also maintains a rolling stack of previous states to support instant undo functionality.
+   The backend acts as the absolute source of truth for the 3D scene. A centralized `SceneManager` handles all Pydantic representations of entities and components (see [[supported-scene-objects|Supported Scene Objects]]). It provides a `GET /api/scene` endpoint for the frontend to poll and updates a local `scene.json` file. It also maintains a rolling stack of previous states to support instant undo functionality.
    
 2. **TypeScript Compilation & Codegen:**
    The host triggers TypeScript rebuilds of the frontend web application and serves the built engine assets. It also drives an automated Codegen pipeline (`generate_ts.py`): whenever Pydantic models change in Python, it exports a JSON Schema and uses `json-schema-to-typescript` to generate perfectly synced TypeScript interfaces for the frontend.

@@ -19,6 +19,7 @@ import {
 export class SceneLoader {
     private scene: Scene;
     private entityNodes: Map<string, Node> = new Map();
+    public onError?: (msg: string) => void;
 
     constructor(scene: Scene) {
         this.scene = scene;
@@ -28,10 +29,22 @@ export class SceneLoader {
         try {
             const response = await fetch("/api/scene");
             if (!response.ok) throw new Error("Failed to fetch scene");
-            const sceneData: SceneModel = await response.json();
+            
+            const text = await response.text();
+            let sceneData: SceneModel;
+            try {
+                sceneData = JSON.parse(text);
+            } catch (parseErr: any) {
+                const msg = "JSON Parse Error: " + parseErr.message;
+                console.error(msg);
+                if (this.onError) this.onError(msg);
+                return;
+            }
+            
             this.applySceneData(sceneData);
-        } catch (err) {
+        } catch (err: any) {
             console.error("Error fetching scene:", err);
+            if (this.onError) this.onError("Fetch Error: " + err.message);
         }
     }
 
@@ -79,6 +92,11 @@ export class SceneLoader {
                     node = MeshBuilder.CreateGround(entity.name, comps.mesh.properties, this.scene);
                     if (node instanceof Mesh) node.receiveShadows = true; // Hardcoded default for now
                     break;
+                default:
+                    const msg = `Unsupported mesh type: ${comps.mesh.type} for entity ${entity.id}`;
+                    console.error(msg);
+                    if (this.onError) this.onError(msg);
+                    break;
             }
         } else if (comps.light) {
             switch (comps.light.type) {
@@ -95,6 +113,11 @@ export class SceneLoader {
                         new Vector3(comps.light.direction[0], comps.light.direction[1], comps.light.direction[2]),
                         this.scene
                     );
+                    break;
+                default:
+                    const msg = `Unsupported light type: ${comps.light.type} for entity ${entity.id}`;
+                    console.error(msg);
+                    if (this.onError) this.onError(msg);
                     break;
             }
         }

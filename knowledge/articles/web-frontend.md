@@ -3,7 +3,7 @@ categories:
 - system-architecture
 created: '2026-07-04T02:25:52.308579+00:00'
 id: web-frontend
-modified: '2026-07-04T04:41:46.738773+00:00'
+modified: '2026-07-04T04:58:02.970678+00:00'
 tags:
 - typescript
 - babylonjs
@@ -24,7 +24,7 @@ A key architectural principle of the frontend is the strict separation between t
 
 ### 1. Model Layer (Data Sync)
 *   **Data-Driven:** The frontend is entirely data-driven and does not dictate scene logic. It acts as a mirror for the backend.
-*   **Codegen Types:** It imports strict TypeScript interfaces (e.g., `Entity`, `MeshComponent`) that are auto-generated directly from the Python backend's Pydantic models. This ensures structural integrity.
+*   **Codegen Types:** It imports strict TypeScript interfaces (e.g., `Entity`, `MeshComponent`) that are auto-generated directly from the Python backend's Pydantic models (see [[supported-scene-objects|Supported Scene Objects]]). This ensures structural integrity.
 *   **Real-time Polling:** The model layer polls the Python backend's `GET /api/scene` endpoint (currently every 2 seconds). It calculates the differential changes and dictates what the visualization layer needs to build or destroy.
 
 ### 2. Visualisation Layer (Babylon.js)

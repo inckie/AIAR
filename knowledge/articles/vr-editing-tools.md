@@ -3,7 +3,7 @@ categories:
 - user-interaction
 created: '2026-07-04T02:25:56.434959+00:00'
 id: vr-editing-tools
-modified: '2026-07-04T02:25:56.434974+00:00'
+modified: '2026-07-04T04:57:58.792185+00:00'
 tags:
 - vr
 - editing
@@ -22,7 +22,7 @@ While voice control provides a high-level, semantic way to interact with the AI,
 
 Users can utilize VR controllers (like Oculus Touch or HTC Vive wands) to perform standard scene manipulations:
 
-*   **Adding Objects:** Spawning new primitives or complex assets from a library into the scene.
+*   **Adding Objects:** Spawning new primitives (see [[supported-scene-objects|Supported Scene Objects]]) or complex assets from a library into the scene.
 *   **Removing Objects:** Deleting selected entities from the environment.
 *   **Modifying Objects (Transformations):** Grabbing, translating (moving), rotating, and scaling objects using spatial 3D gizmos or direct hand interactions.
 *   **Property Editing:** Accessing spatial UI panels to tweak specific component properties on the [[web-frontend|Model Layer]] (e.g., changing colors, physics mass, or custom script variables).
