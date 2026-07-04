@@ -1,5 +1,6 @@
 import {
     Scene,
+    Space,
     Vector3,
     MeshBuilder,
     StandardMaterial,
@@ -159,14 +160,14 @@ export class SceneLoader {
 
         // Apply Transform
         if (comps.transform) {
-            if ((node as any).position) {
-                (node as any).position = new Vector3(comps.transform.position[0], comps.transform.position[1], comps.transform.position[2]);
+            if ((node as any).scaling) {
+                (node as any).scaling = new Vector3(comps.transform.scaling[0], comps.transform.scaling[1], comps.transform.scaling[2], Space.LOCAL);
             }
             if ((node as any).rotation) {
-                (node as any).rotation = new Vector3(comps.transform.rotation[0], comps.transform.rotation[1], comps.transform.rotation[2]);
+                (node as any).rotation = new Vector3(comps.transform.rotation[0], comps.transform.rotation[1], comps.transform.rotation[2], Space.LOCAL);
             }
-            if ((node as any).scaling) {
-                (node as any).scaling = new Vector3(comps.transform.scaling[0], comps.transform.scaling[1], comps.transform.scaling[2]);
+            if ((node as any).position) {
+                (node as any).position = new Vector3(comps.transform.position[0], comps.transform.position[1], comps.transform.position[2]);
             }
         }
 
