@@ -3,7 +3,7 @@ categories:
 - system-architecture
 created: '2026-07-04T03:07:11.883204+00:00'
 id: local-development-webxr
-modified: '2026-07-04T03:07:11.883226+00:00'
+modified: '2026-07-04T07:53:22.972564+00:00'
 tags:
 - development
 - webxr
@@ -31,7 +31,7 @@ This plugin automatically generates a locally-trusted self-signed SSL certificat
 The configuration ensures that:
 1. The server binds to `0.0.0.0` to be accessible on the local network.
 2. `https` is enabled via the `mkcert()` plugin.
-3. API requests are transparently proxied back to the Python Host backend.
+3. API and asset requests are transparently proxied back to the Python Host backend.
 
 ```typescript
 import { defineConfig } from 'vite'
@@ -43,6 +43,10 @@ export default defineConfig({
     host: '0.0.0.0', // expose on local network
     proxy: {
       '/api': {
+        target: 'http://127.0.0.1:9080',
+        changeOrigin: true
+      },
+      '/assets': {
         target: 'http://127.0.0.1:9080',
         changeOrigin: true
       }
