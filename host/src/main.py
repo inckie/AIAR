@@ -169,6 +169,11 @@ def read_root():
     return {"status": "AIAR Host is running"}
 
 
+# Serve assets
+assets_dir_path = os.path.join(os.path.dirname(__file__), "..", "..", "projects", "default", "assets")
+os.makedirs(assets_dir_path, exist_ok=True)
+app.mount("/assets", StaticFiles(directory=assets_dir_path), name="assets")
+
 # Serve the compiled frontend engine
 engine_dist_path = os.path.join(os.path.dirname(__file__), "..", "..", "engine", "dist")
 app.mount("/", StaticFiles(directory=engine_dist_path, html=True), name="engine")

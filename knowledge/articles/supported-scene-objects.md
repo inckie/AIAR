@@ -3,7 +3,7 @@ categories:
 - system-architecture
 created: '2026-07-04T04:56:14.194454+00:00'
 id: supported-scene-objects
-modified: '2026-07-04T04:56:14.194469+00:00'
+modified: '2026-07-04T06:42:01.693261+00:00'
 tags:
 - scene
 - schema
@@ -61,12 +61,14 @@ The `mesh` component is responsible for geometry. If an entity contains a `mesh`
 *   `"box"`
 *   `"sphere"`
 *   `"ground"`
+*   `"gltf"`
 
 ### The `properties` dictionary
-The `properties` object is passed directly into Babylon.js `MeshBuilder` functions. Therefore, you can pass any valid options for the specific geometry:
+The `properties` object is passed directly into Babylon.js `MeshBuilder` functions for primitives, or the `SceneLoader` for glTF models.
 *   **Box:** `size`, `width`, `height`, `depth`, etc.
 *   **Sphere:** `diameter`, `segments`, etc.
 *   **Ground:** `width`, `height`, `subdivisions`, etc. (Note: Grounds automatically receive shadows in the current implementation).
+*   **gltf:** `url` (e.g., `"BoomBox.glb"`). The file must exist in the project's `assets/` directory.
 
 *Note: Passing an unsupported `type` (e.g., `"torus"`) will trigger a soft error in the VR UI.*
 

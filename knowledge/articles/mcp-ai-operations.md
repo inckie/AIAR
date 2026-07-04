@@ -3,7 +3,7 @@ categories:
 - system-architecture
 created: '2026-07-04T05:38:36.882269+00:00'
 id: mcp-ai-operations
-modified: '2026-07-04T06:19:52.977267+00:00'
+modified: '2026-07-04T06:43:39.707168+00:00'
 tags:
 - skill
 - ai
@@ -27,6 +27,7 @@ If you are an AI assistant processing a user's voice command, you are expected t
 ### Scene Manipulation Skills
 
 You can manipulate the scene graph dynamically. Entities consist of a `TransformComponent`, a `MeshComponent`, `LightComponent`, and a `MaterialComponent`.
+(See [[supported-scene-objects|Supported Scene Objects and Components]] for a list of valid components and their properties.)
 
 *   **`create_entity(name, components_json)`**
     *   **Usage:** Spawns a custom entity using a JSON payload. The payload can define transform, mesh, material, and light properties.

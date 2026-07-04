@@ -8,8 +8,11 @@ import {
     DirectionalLight,
     Node,
     Mesh,
-    Light
+    Light,
+    TransformNode,
+    SceneLoader as BJSLoader
 } from "@babylonjs/core";
+import "@babylonjs/loaders/glTF";
 
 import {
     Entity,
@@ -29,7 +32,7 @@ export class SceneLoader {
         try {
             const response = await fetch("/api/scene");
             if (!response.ok) throw new Error("Failed to fetch scene");
-            
+
             const text = await response.text();
             let sceneData: SceneModel;
             try {
@@ -40,7 +43,7 @@ export class SceneLoader {
                 if (this.onError) this.onError(msg);
                 return;
             }
-            
+
             this.applySceneData(sceneData);
         } catch (err: any) {
             console.error("Error fetching scene:", err);
@@ -92,6 +95,27 @@ export class SceneLoader {
                     node = MeshBuilder.CreateGround(entity.name, comps.mesh.properties, this.scene);
                     if (node instanceof Mesh) node.receiveShadows = true; // Hardcoded default for now
                     break;
+                case "gltf":
+                    node = new TransformNode(entity.name, this.scene);
+                    if (comps.mesh.properties?.url) {
+                        BJSLoader.ImportMeshAsync("", "/assets/", comps.mesh.properties.url, this.scene)
+                            .then((result) => {
+                                // TODO: scale hack
+                                if (result.meshes.length > 0) {
+                                    result.meshes[0].normalizeToUnitCube();
+                                }
+                                result.meshes.forEach(m => {
+                                    if (!m.parent) {
+                                        m.setParent(node);
+                                    }
+                                });
+                            })
+                            .catch(err => {
+                                console.error(`Failed to load glTF for entity ${entity.id}:`, err);
+                                if (this.onError) this.onError(`Failed to load glTF: ${err.message}`);
+                            });
+                    }
+                    break;
                 default:
                     const msg = `Unsupported mesh type: ${comps.mesh.type} for entity ${entity.id}`;
                     console.error(msg);
@@ -102,8 +126,8 @@ export class SceneLoader {
             switch (comps.light.type) {
                 case "hemispheric":
                     node = new HemisphericLight(
-                        entity.name, 
-                        new Vector3(comps.light.direction[0], comps.light.direction[1], comps.light.direction[2]), 
+                        entity.name,
+                        new Vector3(comps.light.direction[0], comps.light.direction[1], comps.light.direction[2]),
                         this.scene
                     );
                     break;
@@ -126,7 +150,7 @@ export class SceneLoader {
         if (node) {
             this.updateEntity(node, entity);
         }
-        
+
         return node;
     }
 

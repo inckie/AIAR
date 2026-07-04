@@ -213,14 +213,45 @@
       }
     },
     {
-      "id": "sphere_1a7937",
-      "name": "sphere_1a7937",
+      "id": "BoomBox_973e4c",
+      "name": "BoomBox",
       "components": {
         "transform": {
           "position": [
-            -3.1417055743939093,
-            0.20000000000000012,
-            2.741495883712109
+            3.0,
+            2.5,
+            3.0
+          ],
+          "rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scaling": [
+            10.0,
+            10.0,
+            10.0
+          ]
+        },
+        "mesh": {
+          "type": "gltf",
+          "properties": {
+            "url": "BoomBox.glb"
+          }
+        },
+        "light": null,
+        "material": null
+      }
+    },
+    {
+      "id": "ShowcaseRedSphere_aab770",
+      "name": "ShowcaseRedSphere",
+      "components": {
+        "transform": {
+          "position": [
+            -2.0,
+            0.6,
+            2.0
           ],
           "rotation": [
             0.0,
@@ -236,15 +267,15 @@
         "mesh": {
           "type": "sphere",
           "properties": {
-            "diameter": 0.4
+            "diameter": 1.2
           }
         },
         "light": null,
         "material": {
           "diffuse": [
-            0.6449986541273492,
-            0.86267536483172,
-            0.09052822554885076
+            0.8,
+            0.1,
+            0.1
           ],
           "emissive": [
             0.0,
@@ -260,14 +291,14 @@
       }
     },
     {
-      "id": "GreenBox_bf2874",
-      "name": "GreenBox",
+      "id": "ShowcaseBlueBox_adf624",
+      "name": "ShowcaseBlueBox",
       "components": {
         "transform": {
           "position": [
-            10.0,
-            10.0,
-            10.0
+            2.0,
+            0.5,
+            2.0
           ],
           "rotation": [
             0.0,
@@ -283,11 +314,121 @@
         "mesh": {
           "type": "box",
           "properties": {
-            "size": 2.0
+            "size": 1.0
           }
         },
         "light": null,
-        "material": null
+        "material": {
+          "diffuse": [
+            0.1,
+            0.3,
+            0.8
+          ],
+          "emissive": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "specular": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      }
+    },
+    {
+      "id": "ShowcaseYellowSphere_00a0fa",
+      "name": "ShowcaseYellowSphere",
+      "components": {
+        "transform": {
+          "position": [
+            -1.0,
+            1.2,
+            3.0
+          ],
+          "rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scaling": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "mesh": {
+          "type": "sphere",
+          "properties": {
+            "diameter": 0.8
+          }
+        },
+        "light": null,
+        "material": {
+          "diffuse": [
+            0.8,
+            0.8,
+            0.1
+          ],
+          "emissive": [
+            0.2,
+            0.2,
+            0.0
+          ],
+          "specular": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      }
+    },
+    {
+      "id": "ShowcaseGreenBox_50d285",
+      "name": "ShowcaseGreenBox",
+      "components": {
+        "transform": {
+          "position": [
+            1.0,
+            1.5,
+            3.0
+          ],
+          "rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scaling": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "mesh": {
+          "type": "box",
+          "properties": {
+            "size": 0.8
+          }
+        },
+        "light": null,
+        "material": {
+          "diffuse": [
+            0.1,
+            0.7,
+            0.1
+          ],
+          "emissive": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "specular": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
       }
     }
   ]
