@@ -1,0 +1,310 @@
+{
+  "entities": [
+    {
+      "id": "light1",
+      "name": "MainHemisphericLight",
+      "components": {
+        "transform": {
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scaling": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "mesh": null,
+        "light": {
+          "type": "hemispheric",
+          "direction": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "intensity": 0.5,
+          "position": null
+        },
+        "material": null
+      }
+    },
+    {
+      "id": "dirLight",
+      "name": "DirectionalLight",
+      "components": {
+        "transform": {
+          "position": [
+            20.0,
+            40.0,
+            20.0
+          ],
+          "rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scaling": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "mesh": null,
+        "light": {
+          "type": "directional",
+          "direction": [
+            -1.0,
+            -2.0,
+            -1.0
+          ],
+          "intensity": 0.8,
+          "position": null
+        },
+        "material": null
+      }
+    },
+    {
+      "id": "ground1",
+      "name": "Ground",
+      "components": {
+        "transform": {
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scaling": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "mesh": {
+          "type": "ground",
+          "properties": {
+            "width": 10,
+            "height": 10
+          }
+        },
+        "light": null,
+        "material": {
+          "diffuse": [
+            0.2,
+            0.2,
+            0.2
+          ],
+          "emissive": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "specular": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      }
+    },
+    {
+      "id": "sphere1",
+      "name": "GlowingSphere",
+      "components": {
+        "transform": {
+          "position": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scaling": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "mesh": {
+          "type": "sphere",
+          "properties": {
+            "diameter": 0.5
+          }
+        },
+        "light": null,
+        "material": {
+          "diffuse": [
+            0.1,
+            0.2,
+            0.5
+          ],
+          "emissive": [
+            0.2,
+            0.5,
+            1.0
+          ],
+          "specular": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      }
+    },
+    {
+      "id": "box1",
+      "name": "OrangeBox",
+      "components": {
+        "transform": {
+          "position": [
+            1.0,
+            1.2,
+            0.0
+          ],
+          "rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scaling": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "mesh": {
+          "type": "box",
+          "properties": {
+            "size": 0.4
+          }
+        },
+        "light": null,
+        "material": {
+          "diffuse": [
+            1.0,
+            0.4,
+            0.1
+          ],
+          "emissive": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "specular": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      }
+    },
+    {
+      "id": "box_805103",
+      "name": "box_805103",
+      "components": {
+        "transform": {
+          "position": [
+            -0.21116990318240442,
+            1.1418744447952618,
+            -2.6560398998577126
+          ],
+          "rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scaling": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "mesh": {
+          "type": "box",
+          "properties": {
+            "size": 0.4
+          }
+        },
+        "light": null,
+        "material": {
+          "diffuse": [
+            0.8320677691456174,
+            0.3251281351579026,
+            0.9386897905483089
+          ],
+          "emissive": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "specular": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      }
+    },
+    {
+      "id": "box_3c3bb2",
+      "name": "box_3c3bb2",
+      "components": {
+        "transform": {
+          "position": [
+            0.6890009456972377,
+            0.9723233279271528,
+            -2.0036657925765677
+          ],
+          "rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scaling": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "mesh": {
+          "type": "box",
+          "properties": {
+            "size": 0.4
+          }
+        },
+        "light": null,
+        "material": {
+          "diffuse": [
+            0.9572666886654166,
+            0.8662353320802967,
+            0.9542758476544815
+          ],
+          "emissive": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "specular": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -8,12 +8,13 @@ import {
     StandardMaterial,
     Color3,
     DirectionalLight,
-    ShadowGenerator,
     WebXRFeatureName,
-    WebXRState
+    WebXRState,
+    Ray
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button, Grid } from "@babylonjs/gui";
 import * as GUI from "@babylonjs/gui";
+import { SceneLoader } from "./model/SceneLoader";
 
 const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
 
@@ -30,39 +31,16 @@ const createScene = async function () {
     camera.setTarget(Vector3.Zero());
     camera.attachControl(canvas, true);
 
-    // Lighting
-    const light = new HemisphericLight("light1", new Vector3(0, 1, 0), scene);
-    light.intensity = 0.5;
-
-    const dirLight = new DirectionalLight("dirLight", new Vector3(-1, -2, -1), scene);
-    dirLight.position = new Vector3(20, 40, 20);
-    dirLight.intensity = 0.8;
+    // Dynamic Component Object Model Scene Loader
+    const sceneLoader = new SceneLoader(scene);
     
-    const shadowGenerator = new ShadowGenerator(1024, dirLight);
+    // We do an initial fetch to populate the scene before entering VR
+    await sceneLoader.fetchAndUpdateScene();
 
-    // Ground
-    const ground = MeshBuilder.CreateGround("ground", { width: 10, height: 10 }, scene);
-    const groundMat = new StandardMaterial("groundMat", scene);
-    groundMat.diffuseColor = new Color3(0.2, 0.2, 0.2);
-    groundMat.specularColor = new Color3(0, 0, 0);
-    ground.material = groundMat;
-    ground.receiveShadows = true;
-
-    // A nice glowing sphere
-    const sphere = MeshBuilder.CreateSphere("sphere", { diameter: 0.5 }, scene);
-    sphere.position.y = 1;
-    const sphereMat = new StandardMaterial("sphereMat", scene);
-    sphereMat.emissiveColor = new Color3(0.2, 0.5, 1.0);
-    sphereMat.diffuseColor = new Color3(0.1, 0.2, 0.5);
-    sphere.material = sphereMat;
-    shadowGenerator.addShadowCaster(sphere);
-
-    // A box
-    const box = MeshBuilder.CreateBox("box", { size: 0.4 }, scene);
-    box.position = new Vector3(1, 0.2, 0);
-    const boxMat = new StandardMaterial("boxMat", scene);
-    boxMat.diffuseColor = new Color3(1.0, 0.4, 0.1);
-    box.material = boxMat;
+    // Set up a polling loop to automatically reflect changes in scene.json every 2 seconds
+    setInterval(() => {
+        sceneLoader.fetchAndUpdateScene();
+    }, 2000);
     // Create a debug overlay so we can see errors on the headset
     const debugDiv = document.createElement("div");
     debugDiv.style.position = "absolute";
@@ -88,8 +66,10 @@ const createScene = async function () {
             log("immersive-vr supported: " + supported);
         }
 
+        // Since the ground is now dynamic, we let Babylon infer the floor or we find it manually.
+        // For simplicity, createDefaultXRExperienceAsync will find any mesh named "Ground".
         const xr = await scene.createDefaultXRExperienceAsync({
-            floorMeshes: [ground]
+            floorMeshes: scene.meshes.filter(m => m.name === "Ground")
         });
 
         // Enable explicit Hand Tracking so Babylon properly swaps between controllers and hands
@@ -166,8 +146,32 @@ const createScene = async function () {
                         log("Sending audio: " + audioBlob.size + " bytes");
                         stream.getTracks().forEach(track => track.stop());
 
+                        // Gather Spatial Context
+                        const context = {
+                            head: {
+                                position: xr.baseExperience.camera.position.asArray(),
+                                direction: xr.baseExperience.camera.getForwardRay().direction.asArray()
+                            },
+                            intersection: null as any
+                        };
+
+                        xr.input.controllers.forEach(c => {
+                            if (c.inputSource.handedness === "right" && c.pointer) {
+                                const ray = new Ray(c.pointer.position, c.pointer.forward, 100);
+                                const pick = scene.pickWithRay(ray);
+                                if (pick && pick.hit && pick.pickedMesh) {
+                                    context.intersection = {
+                                        point: pick.pickedPoint?.asArray(),
+                                        meshName: pick.pickedMesh.name,
+                                        distance: pick.distance
+                                    };
+                                }
+                            }
+                        });
+
                         const formData = new FormData();
                         formData.append("file", audioBlob, "recording.webm");
+                        formData.append("context", JSON.stringify(context));
                         
                         try {
                             const res = await fetch("/api/voice/transcribe", {
@@ -177,7 +181,11 @@ const createScene = async function () {
                             const data = await res.json();
                             if (data.text) {
                                 log("Recognized: " + data.text);
-                                showVRPopup(data.text);
+                                let popupMsg = '"' + data.text + '"';
+                                if (data.action_response) {
+                                    popupMsg += "\n\nSystem: " + data.action_response;
+                                }
+                                showVRPopup(popupMsg);
 
                                 // Hardcoded system commands
                                 const txt = data.text.toLowerCase();
