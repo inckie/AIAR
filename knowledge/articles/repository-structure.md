@@ -26,10 +26,10 @@ The root directory contains three primary folders:
 
 ```text
 AIAR/
-РІвЂќСљРІвЂќР‚РІвЂќР‚ host/                  # Python backend server
-РІвЂќСљРІвЂќР‚РІвЂќР‚ engine/                # TypeScript AR/VR engine
-РІвЂќвЂќРІвЂќР‚РІвЂќР‚ projects/
-    РІвЂќвЂќРІвЂќР‚РІвЂќР‚ default/           # Default VR project data
+├── host/                  # Python backend server
+├── engine/                # TypeScript AR/VR engine
+└── projects/
+    └── default/           # Default VR project data
 ```
 
 ### 1. `host/` (Python Backend)
