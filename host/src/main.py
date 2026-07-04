@@ -67,7 +67,11 @@ async def transcribe_voice(file: UploadFile = File(...), context: str = Form(Non
         # Process voice command
         action_response = None
         if text:
-            action_response = command_processor.process(text, ctx_data)
+            lower_text = text.lower()
+            if "exit vr" in lower_text or "exit immersion" in lower_text:
+                action_response = "Exiting VR session..."
+            else:
+                action_response = command_processor.process(text, ctx_data)
             
         return {"text": text, "action_response": action_response}
     except Exception as e:
