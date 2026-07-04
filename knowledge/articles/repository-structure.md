@@ -3,7 +3,7 @@ categories:
 - system-architecture
 created: '2026-07-04T02:34:41.704822+00:00'
 id: repository-structure
-modified: '2026-07-04T02:34:41.704840+00:00'
+modified: '2026-07-04T04:44:11.343794+00:00'
 tags:
 - architecture
 - structure
@@ -22,7 +22,7 @@ This article documents the physical directory structure and the technology stack
 
 ## Directory Layout
 
-The root directory (`d:\Work\Tests\mine\AIAR`) contains three primary folders:
+The root directory contains three primary folders:
 
 ```text
 AIAR/
@@ -52,5 +52,5 @@ AIAR/
 *   **Purpose:** This directory serves as the default workspace loaded by the engine if the user hasn't specified another project path. All project-specific data lives here.
 *   **Structure:**
     *   `assets/`: Storage for raw and processed media files, primarily `.gltf` / `.glb` models, and separate textures (PNG/JPG).
-    *   `scenes/`: Stores the declarative scene graph files (likely JSON or YAML) that describe how entities and components are arranged in the world.
+    *   `scenes/`: Stores the declarative scene graph files (like `scene.json`) that describe how entities and components are arranged in the world.
     *   `scripts/`: Project-specific TypeScript modules that define custom logic or behaviors not included in the base engine.

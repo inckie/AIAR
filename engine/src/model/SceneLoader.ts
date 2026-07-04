@@ -11,47 +11,10 @@ import {
     Light
 } from "@babylonjs/core";
 
-// Define the interfaces matching our backend JSON structure
-export interface TransformComponent {
-    position: number[];
-    rotation: number[];
-    scaling: number[];
-}
-
-export interface MeshComponent {
-    type: string;
-    properties: any;
-}
-
-export interface LightComponent {
-    type: string;
-    direction: number[];
-    intensity: number;
-    position?: number[];
-}
-
-export interface MaterialComponent {
-    diffuse: number[];
-    emissive: number[];
-    specular: number[];
-}
-
-export interface Components {
-    transform?: TransformComponent;
-    mesh?: MeshComponent;
-    light?: LightComponent;
-    material?: MaterialComponent;
-}
-
-export interface Entity {
-    id: string;
-    name: string;
-    components: Components;
-}
-
-export interface SceneModel {
-    entities: Entity[];
-}
+import {
+    Entity,
+    Scene as SceneModel
+} from "./types";
 
 export class SceneLoader {
     private scene: Scene;
@@ -74,8 +37,9 @@ export class SceneLoader {
 
     private applySceneData(sceneData: SceneModel) {
         const currentIds = new Set<string>();
+        const entities = sceneData.entities || [];
 
-        for (const entity of sceneData.entities) {
+        for (const entity of entities) {
             currentIds.add(entity.id);
             if (!this.entityNodes.has(entity.id)) {
                 // Create new entity

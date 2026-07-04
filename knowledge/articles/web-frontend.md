@@ -3,7 +3,7 @@ categories:
 - system-architecture
 created: '2026-07-04T02:25:52.308579+00:00'
 id: web-frontend
-modified: '2026-07-04T02:25:52.308594+00:00'
+modified: '2026-07-04T04:41:46.738773+00:00'
 tags:
 - typescript
 - babylonjs
@@ -22,12 +22,12 @@ The web frontend is the visual and interactive core of the AR prototyping system
 
 A key architectural principle of the frontend is the strict separation between the **visualisation layer** and the **model layer**.
 
-### 1. Model Layer
-*   **Pure TypeScript:** This layer is independent of the rendering engine.
-*   **Component System:** It employs a Unity3D-like component system where entities are composed of reusable data components and logic behaviors. 
-*   **State Management:** It holds the absolute truth of the AR scene's state, tracking all objects, properties, and relationships. It handles the business logic and structural integrity of the prototyping environment.
+### 1. Model Layer (Data Sync)
+*   **Data-Driven:** The frontend is entirely data-driven and does not dictate scene logic. It acts as a mirror for the backend.
+*   **Codegen Types:** It imports strict TypeScript interfaces (e.g., `Entity`, `MeshComponent`) that are auto-generated directly from the Python backend's Pydantic models. This ensures structural integrity.
+*   **Real-time Polling:** The model layer polls the Python backend's `GET /api/scene` endpoint (currently every 2 seconds). It calculates the differential changes and dictates what the visualization layer needs to build or destroy.
 
-### 2. Visualisation Layer
-*   **Babylon.js Integration:** This layer listens to changes in the Model Layer and updates the Babylon.js scene graph accordingly.
-*   **Rendering:** Handles 3D rendering, shaders, materials, and lighting in the VR environment.
-*   **Input Translation:** Captures user inputs (from VR controllers, headsets, or traditional devices) and translates them into semantic commands that are dispatched to the Model Layer or the [[python-host|Python backend]] for AI processing.
+### 2. Visualisation Layer (Babylon.js)
+*   **Scene Instantiation:** The `SceneLoader` listens to changes in the Model Layer and updates the Babylon.js scene graph accordingly, creating meshes, lights, and applying materials based on component properties.
+*   **Rendering:** Handles 3D rendering, shaders, and materials in the VR environment.
+*   **Input Translation & Spatial Context:** Captures user inputs (from VR controllers and headsets). Crucially, whenever the user executes a voice command, this layer instantly snapshots the spatial context (head position, and raycast intersections from the right controller) and bundles it with the audio to send to the backend for semantic processing.

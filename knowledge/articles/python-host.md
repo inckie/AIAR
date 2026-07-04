@@ -3,7 +3,7 @@ categories:
 - system-architecture
 created: '2026-07-04T02:25:49.440581+00:00'
 id: python-host
-modified: '2026-07-04T02:25:49.440597+00:00'
+modified: '2026-07-04T04:41:38.063979+00:00'
 tags:
 - python
 - backend
@@ -21,13 +21,16 @@ The Python Host serves as the backend foundation for the AIAR prototyping system
 
 ## Key Responsibilities
 
-1. **TypeScript Compilation & Serving:**
-   The host is responsible for triggering TypeScript rebuilds of the frontend web application and serving the built engine assets over HTTP to the VR clients.
+1. **Scene State Management:**
+   The backend acts as the absolute source of truth for the 3D scene. A centralized `SceneManager` handles all Pydantic representations of entities and components. It provides a `GET /api/scene` endpoint for the frontend to poll and updates a local `scene.json` file. It also maintains a rolling stack of previous states to support instant undo functionality.
    
-2. **AI Layer Hosting:**
-   The core AI logic and interaction handling are hosted here. It utilizes the Antigravity SDK locally to process user commands and translate them into actionable modifications within the VR scene.
+2. **TypeScript Compilation & Codegen:**
+   The host triggers TypeScript rebuilds of the frontend web application and serves the built engine assets. It also drives an automated Codegen pipeline (`generate_ts.py`): whenever Pydantic models change in Python, it exports a JSON Schema and uses `json-schema-to-typescript` to generate perfectly synced TypeScript interfaces for the frontend.
+   
+3. **AI Layer Hosting & Voice Processing:**
+   The core AI logic and interaction handling are hosted here. It utilizes local `openai-whisper` models to transcribe voice commands (with bundled FFmpeg decoding) and routes the results and spatial context through an `AbstractCommandProcessor` to manipulate the VR scene.
 
-3. **Multi-Protocol Interfaces:**
+4. **Multi-Protocol Interfaces:**
    To provide flexibility and integration capabilities, the Python host exposes its AI and control layers through multiple interfaces:
    * **REST HTTP API:** For direct control from the VR environment (e.g., executing voice commands or UI actions) and from other standard tools.
    * **HTTP MCP (Model Context Protocol):** To expose tools and context to external AI agents, allowing them to inspect or manipulate the AR prototyping environment.

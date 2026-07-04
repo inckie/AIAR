@@ -61,7 +61,7 @@ async def transcribe_voice(file: UploadFile = File(...), context: str = Form(Non
     try:
         # load_audio runs ffmpeg (using the bundled imageio-ffmpeg we injected into PATH)
         audio = whisper.load_audio(temp_file_path)
-        result = whisper_model.transcribe(temp_file_path)
+        result = whisper_model.transcribe(temp_file_path, language="en")
         text = result["text"].strip()
         
         # Process voice command

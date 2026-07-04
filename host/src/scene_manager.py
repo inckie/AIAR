@@ -1,48 +1,14 @@
 import os
 import json
-from typing import Dict, List, Optional, Any
-from pydantic import BaseModel, Field
-
-# Component Models
-class TransformComponent(BaseModel):
-    position: List[float] = [0.0, 0.0, 0.0]
-    rotation: List[float] = [0.0, 0.0, 0.0]
-    scaling: List[float] = [1.0, 1.0, 1.0]
-
-class MeshComponent(BaseModel):
-    type: str # "box", "sphere", "ground", etc.
-    properties: Dict[str, Any] = {} # { "size": 1, "diameter": 0.5, etc. }
-
-class LightComponent(BaseModel):
-    type: str # "hemispheric", "directional"
-    direction: List[float] = [0.0, -1.0, 0.0]
-    intensity: float = 1.0
-    position: Optional[List[float]] = None # For directional lights
-
-class MaterialComponent(BaseModel):
-    diffuse: List[float] = [1.0, 1.0, 1.0] # RGB
-    emissive: List[float] = [0.0, 0.0, 0.0]
-    specular: List[float] = [1.0, 1.0, 1.0]
-
-class Components(BaseModel):
-    transform: Optional[TransformComponent] = None
-    mesh: Optional[MeshComponent] = None
-    light: Optional[LightComponent] = None
-    material: Optional[MaterialComponent] = None
-
-class Entity(BaseModel):
-    id: str
-    name: str
-    components: Components
-
-class Scene(BaseModel):
-    entities: List[Entity] = []
+from typing import Optional
+from .models import Scene, Entity, Components, TransformComponent, MeshComponent, LightComponent, MaterialComponent
 
 class SceneManager:
     def __init__(self, root_dir: str):
         self.scene_dir = os.path.join(root_dir, "projects", "default", "scenes")
         self.scene_file = os.path.join(self.scene_dir, "scene.json")
         self.scene: Scene = Scene()
+        self.undo_stack = []
         
         self._ensure_scene_exists()
 
@@ -124,15 +90,30 @@ class SceneManager:
         self.load_scene()
         return self.scene.model_dump()
 
+    def _push_undo(self):
+        self.undo_stack.append(self.scene.model_dump())
+        if len(self.undo_stack) > 50:
+            self.undo_stack.pop(0)
+
     def add_entity(self, entity: Entity):
         self.load_scene()
+        self._push_undo()
         self.scene.entities.append(entity)
         self.save_scene()
 
     def remove_entity(self, entity_id: str):
         self.load_scene()
+        self._push_undo()
         self.scene.entities = [e for e in self.scene.entities if e.id != entity_id]
         self.save_scene()
+
+    def undo(self) -> bool:
+        if not self.undo_stack:
+            return False
+        prev_state = self.undo_stack.pop()
+        self.scene = Scene(**prev_state)
+        self.save_scene()
+        return True
 
     def get_entity_by_name(self, name: str) -> Optional[Entity]:
         self.load_scene()

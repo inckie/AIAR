@@ -6,13 +6,15 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "codegen": "json2ts schema.json > src/model/types.ts"
   },
   "dependencies": {
     "@babylonjs/core": "^9.15.0",
     "@babylonjs/gui": "^9.15.0"
   },
   "devDependencies": {
+    "json-schema-to-typescript": "^15.0.4",
     "typescript": "^5.0.0",
     "vite": "^8.1.3",
     "vite-plugin-mkcert": "^2.1.0"

@@ -3,7 +3,8 @@ import json
 import uuid
 import random
 from typing import Dict, Any
-from .scene_manager import SceneManager, Entity, Components, TransformComponent, MeshComponent, MaterialComponent
+from .scene_manager import SceneManager
+from .models import Entity, Components, TransformComponent, MeshComponent, MaterialComponent
 
 class AbstractCommandProcessor(abc.ABC):
     def __init__(self, scene_manager: SceneManager):
@@ -38,6 +39,12 @@ class HardcodedCommandProcessor(AbstractCommandProcessor):
             spawn_pos = intersection["point"]
             target_mesh_name = intersection.get("meshName")
         
+        # Intent: UNDO
+        if "undo" in text:
+            if self.scene_manager.undo():
+                return "Undid last action."
+            return "Nothing to undo."
+
         # Intent: ADD
         if "add" in text or "create" in text:
             shape = "box" if "box" in text else ("sphere" if "sphere" in text else None)
