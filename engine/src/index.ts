@@ -11,7 +11,8 @@ import {
     ShadowGenerator,
     WebXRFeatureName
 } from "@babylonjs/core";
-import { AdvancedDynamicTexture, Button } from "@babylonjs/gui";
+import { AdvancedDynamicTexture, Button, Grid } from "@babylonjs/gui";
+import * as GUI from "@babylonjs/gui";
 
 const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
 
@@ -101,35 +102,107 @@ const createScene = async function () {
             log("Hand tracking not supported on this device.");
         }
         
+        // Voice recording state
+        let isRecording = false;
+        let mediaRecorder: MediaRecorder | null = null;
+        let audioChunks: Blob[] = [];
+        let voiceBtn: Button | null = null;
+
+        const toggleRecording = async () => {
+            if (!voiceBtn) return;
+            if (isRecording) {
+                if (mediaRecorder) {
+                    mediaRecorder.stop();
+                }
+                isRecording = false;
+                voiceBtn.background = "green";
+                if (voiceBtn.textBlock) voiceBtn.textBlock.text = "Voice Command";
+            } else {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    
+                    mediaRecorder.ondataavailable = (e) => {
+                        if (e.data.size > 0) audioChunks.push(e.data);
+                    };
+                    
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        log("Audio recorded: " + audioBlob.size + " bytes");
+                        stream.getTracks().forEach(track => track.stop());
+                    };
+                    
+                    mediaRecorder.start();
+                    isRecording = true;
+                    voiceBtn.background = "red";
+                    if (voiceBtn.textBlock) voiceBtn.textBlock.text = "Recording...";
+                    log("Recording started...");
+                } catch (err: any) {
+                    log("Mic error: " + err.message);
+                }
+            }
+        };
+
         // Wrist Menu implementation
         xr.input.onControllerAddedObservable.add((controller) => {
-            // Some controllers (or hands) might not fire motionControllerInit immediately.
-            // We can check the handedness directly from the inputSource.
+            // Right controller: bind hardware button
+            if (controller.inputSource.handedness === "right") {
+                controller.onMotionControllerInitObservable.add((motionController) => {
+                    const aButton = motionController.getComponent("a-button");
+                    if (aButton) {
+                        aButton.onButtonStateChangedObservable.add((component) => {
+                            if (component.changes.pressed && component.pressed) {
+                                toggleRecording();
+                            }
+                        });
+                    }
+                });
+            }
+
+            // Left controller: attach wrist menu
             if (controller.inputSource.handedness === "left" || controller.inputSource.handedness === "none") {
                 // sideOrientation: 2 is Mesh.DOUBLESIDE to ensure it's visible from both sides
-                const wristMenu = MeshBuilder.CreatePlane("wristMenu", { width: 0.2, height: 0.1, sideOrientation: 2 }, scene);
+                const wristMenu = MeshBuilder.CreatePlane("wristMenu", { width: 0.2, height: 0.2, sideOrientation: 2 }, scene);
                 
                 // Attach to the pointer node which is guaranteed to exist
                 wristMenu.setParent(controller.pointer);
                 
-                // Position it above the controller/hand
+                // Position it above the controller/hand (restored original location)
                 wristMenu.position = new Vector3(0, 0.15, -0.1);
                 wristMenu.rotation = new Vector3(Math.PI / 4, 0, 0);
 
                 const advancedTexture = AdvancedDynamicTexture.CreateForMesh(wristMenu);
+                
+                const grid = new GUI.Grid();
+                grid.width = "100%";
+                grid.height = "100%";
+                grid.addRowDefinition(0.5);
+                grid.addRowDefinition(0.5);
+                advancedTexture.addControl(grid);
+
+                voiceBtn = Button.CreateSimpleButton("voiceBtn", "Voice Command");
+                voiceBtn.width = 1;
+                voiceBtn.height = 1; // 100% of the grid cell
+                voiceBtn.color = "white";
+                voiceBtn.background = "green";
+                voiceBtn.fontSize = 80;
+                voiceBtn.onPointerUpObservable.add(() => toggleRecording());
+                grid.addControl(voiceBtn, 0, 0); // row 0
+
                 const exitBtn = Button.CreateSimpleButton("exitBtn", "Exit VR");
                 exitBtn.width = 1;
-                exitBtn.height = 1;
+                exitBtn.height = 1; // 100% of the grid cell
                 exitBtn.color = "white";
                 exitBtn.background = "darkred";
-                exitBtn.fontSize = 100; // Adjusted font size
+                exitBtn.fontSize = 80;
                 
                 exitBtn.onPointerUpObservable.add(() => {
                     xr.baseExperience.exitXRAsync();
                 });
+                grid.addControl(exitBtn, 1, 0); // row 1
                 
-                advancedTexture.addControl(exitBtn);
-                log("Wrist menu attached to left controller/hand.");
+                log("Wrist menu attached.");
             }
         });
 
