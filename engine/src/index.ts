@@ -6,6 +6,27 @@ import { DebugOverlay } from "./ui/DebugOverlay";
 import { VRPopup } from "./ui/VRPopup";
 import { VoiceCommandManager } from "./interaction/VoiceCommandManager";
 import { WristMenu } from "./ui/WristMenu";
+import { Logger } from "./core/Logger";
+
+const browserLogger = new Logger("Browser");
+
+window.addEventListener('error', (event) => {
+    browserLogger.error(`Uncaught error: ${event.message} at ${event.filename}:${event.lineno}`);
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+    browserLogger.error(`Unhandled promise rejection: ${event.reason}`);
+});
+
+console.error = (...args: any[]) => {
+    const msg = args.map(a => {
+        if (typeof a === 'object') {
+            try { return JSON.stringify(a); } catch (e) { return String(a); }
+        }
+        return String(a);
+    }).join(' ');
+    browserLogger.error(`Console Error: ${msg}`);
+};
 
 const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
 

@@ -8,6 +8,7 @@ from fastapi import FastAPI, File, UploadFile, Form, BackgroundTasks, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Dict, Any
+from pydantic import BaseModel
 import uvicorn
 from .scene_manager import SceneManager
 from .command_processor import HardcodedCommandProcessor, OpenAIBackend
@@ -168,6 +169,15 @@ async def transcribe_voice(file: UploadFile = File(...), context: str = Form(Non
 def read_root():
     return {"status": "AIAR Host is running"}
 
+class LogRequest(BaseModel):
+    level: str
+    subsystem: str
+    message: str
+
+@app.post("/api/logs")
+def receive_log(req: LogRequest):
+    logger._add_log(req.level, req.subsystem, req.message)
+    return {"status": "ok"}
 
 # IMPORTANT: When adding new API routes, controller paths, or static file mounts (like /scripts) 
 # on the backend, you MUST update the Vite development server proxy list in 'engine/vite.config.ts'.

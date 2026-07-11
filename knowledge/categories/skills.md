@@ -1,9 +1,9 @@
 ---
 categories:
 - overview
-created: '2026-07-11T07:21:00.000000+00:00'
+created: '2026-07-11T07:21:00+00:00'
 id: skills
-modified: '2026-07-11T07:21:00.000000+00:00'
+modified: '2026-07-11T07:44:21.561281+00:00'
 tags:
 - skills
 - ai-skills
@@ -28,4 +28,5 @@ These guides provide developer skills necessary for AI agents to perform tasks s
 
 *   [[mcp-ai-operations]]: Explains operational skills for using MCP tools, including how to create/update entities, manage undo stacks, and query system telemetry or subsystem logs.
 *   [[custom-game-scripts]]: Outlines developer skills for writing custom JavaScript component scripts, mapping Unity-like lifecycle events in Babylon.js, and avoiding common rendering traps.
+*   [[debugging-skill]]: Details essential techniques for debugging Python backend issues via telemetry tools and troubleshooting JavaScript/WebXR errors forwarded directly to the backend log stream.
 <!-- ai:end -->

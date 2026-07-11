@@ -135,3 +135,7 @@ To prevent memory leaks:
 
 ### IV. Dynamic Modifiers
 Properties passed to `properties` in `scene.json` (such as `speed`, `axis`, `color`) can be parsed in the constructor. Provide sane defaults in case the user does not specify them in `scene.json`.
+
+### V. Logging
+Do not worry about accessing terminal logs on the browser—the frontend environment automatically forwards standard JavaScript logging methods and unhandled exceptions (via `console.error` hooking and `window.onerror`) directly to the Python backend's `SystemLogger` under the "Browser" subsystem.
+Therefore, if you need to trace variables or report errors in your custom script, you can simply use the native `console.error()`, `console.warn()`, or `console.info()` and they will be visible in the backend log stream readable by MCP tools.
