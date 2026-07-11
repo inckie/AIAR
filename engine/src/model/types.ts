@@ -7,6 +7,9 @@
 
 export type Id = string;
 export type Name = string;
+export type ParentId = string | null;
+export type Enabled = boolean;
+export type Visible = boolean;
 export type Position = number[];
 export type Rotation = number[];
 export type Scaling = number[];
@@ -27,6 +30,9 @@ export interface Scene {
 export interface Entity {
   id: Id;
   name: Name;
+  parent_id?: ParentId;
+  enabled?: Enabled;
+  visible?: Visible;
   components: Components;
   [k: string]: unknown;
 }

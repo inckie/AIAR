@@ -1,3 +1,13 @@
+"""Pydantic models representing the core AIAR entities and components.
+
+:wk-id: supported-scene-objects
+:wk-tags: scene, schema, models, pydantic, components, hierarchy
+:wk-categories: system-architecture
+
+This module defines the schema for 3D entities, their component state, and scene structure.
+Recently added support for parent-child hierarchies (`parent_id`) and object state (`enabled`, `visible`).
+"""
+
 from typing import Dict, List, Optional, Any
 from pydantic import BaseModel, Field
 
@@ -37,6 +47,9 @@ class Components(BaseModel):
 class Entity(BaseModel):
     id: str
     name: str
+    parent_id: Optional[str] = None
+    enabled: bool = True
+    visible: bool = True
     components: Components
 
 

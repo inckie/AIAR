@@ -1,3 +1,13 @@
+"""FastMCP server definition exposing 3D tools to the AI agent.
+
+:wk-id: mcp-ai-operations
+:wk-tags: mcp, server, tools, ai, fastmcp, hierarchy, visibility
+:wk-categories: system-architecture
+
+Exposes tools to manipulate the 3D scene (create/update/remove/reparent/state)
+and fetch logs for the AI assistant.
+"""
+
 from typing import Optional, List, Dict, Any
 from mcp.server.fastmcp import FastMCP
 import uuid
@@ -108,6 +118,45 @@ def create_mcp_server(scene_manager: SceneManager) -> FastMCP:
         if scene_manager.undo():
             return "Undid last action successfully."
         return "Nothing to undo."
+
+    @mcp.tool()
+    def reparent_object(entity_id: str, parent_id: Optional[str] = None) -> str:
+        """
+        Set or clear the parent of an object to build a hierarchy.
+        Args:
+            entity_id: The ID of the entity to reparent.
+            parent_id: The ID of the new parent entity. Pass null/None to unparent.
+        Returns:
+            Confirmation string.
+        """
+        updates = {"parent_id": parent_id}
+        if scene_manager.update_entity(entity_id, updates):
+            return f"Successfully reparented entity '{entity_id}'."
+        return f"Failed to reparent entity '{entity_id}'."
+
+    @mcp.tool()
+    def set_object_state(entity_id: str, enabled: Optional[bool] = None, visible: Optional[bool] = None) -> str:
+        """
+        Set the enabled and visible states of an object.
+        Args:
+            entity_id: The ID of the entity.
+            enabled: Whether the object (and its children) should be active. Omit to leave unchanged.
+            visible: Whether the object (and its children) should be visible. Omit to leave unchanged.
+        Returns:
+            Confirmation string.
+        """
+        updates = {}
+        if enabled is not None:
+            updates["enabled"] = enabled
+        if visible is not None:
+            updates["visible"] = visible
+            
+        if not updates:
+            return "No state updates provided."
+            
+        if scene_manager.update_entity(entity_id, updates):
+            return f"Successfully updated state for entity '{entity_id}'."
+        return f"Failed to update state for entity '{entity_id}'."
 
     @mcp.tool()
     def log_tail(

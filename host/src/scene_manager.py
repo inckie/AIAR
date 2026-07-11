@@ -1,3 +1,13 @@
+"""Manages the in-memory graph and state of the AIAR scene.
+
+:wk-id: scene-manager
+:wk-tags: scene, state, hierarchy, components, manager
+:wk-categories: system-architecture
+
+Orchestrates loading, saving, adding, and updating scene objects, 
+acting as the central source of truth for the spatial state of all VR objects.
+"""
+
 import os
 import json
 from typing import Optional

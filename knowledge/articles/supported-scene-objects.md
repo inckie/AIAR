@@ -24,15 +24,22 @@ This article details the currently supported component types and their parsable 
 
 ## Entity Structure
 
-An `Entity` is the base container in the scene. It holds an ID, a name, and a dictionary of `components`.
+An `Entity` is the base container in the scene. It holds an ID, a name, a dictionary of `components`, and recently added state properties:
 
 ```json
 {
   "id": "unique-uuid",
   "name": "My Object",
+  "parent_id": null,
+  "enabled": true,
+  "visible": true,
   "components": { ... }
 }
 ```
+
+- **parent_id**: Used to establish parent-child hierarchies. Child objects inherit transforms and visibility state from their parent.
+- **enabled**: A boolean that activates or deactivates the entity (and its children) entirely.
+- **visible**: A boolean that toggles visual rendering without disabling logic.
 
 ---
 

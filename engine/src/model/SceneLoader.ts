@@ -1,3 +1,14 @@
+/**
+ * Responsible for syncing the backend JSON state to Babylon.js scene graph.
+ *
+ * @wk-id web-frontend
+ * @wk-tags typescript, babylonjs, frontend, vr, architecture, hierarchy
+ * @wk-categories system-architecture
+ *
+ * It uses a two-pass architecture to instantiate meshes and then link their parent hierarchies
+ * and apply object state (visible, enabled).
+ */
+
 import {
     Scene,
     Space,
@@ -56,6 +67,7 @@ export class SceneLoader {
         const currentIds = new Set<string>();
         const entities = sceneData.entities || [];
 
+        // Pass 1: Create and Update entities
         for (const entity of entities) {
             currentIds.add(entity.id);
             if (!this.entityNodes.has(entity.id)) {
@@ -67,6 +79,18 @@ export class SceneLoader {
             } else {
                 // Update existing entity
                 this.updateEntity(this.entityNodes.get(entity.id)!, entity);
+            }
+        }
+
+        // Pass 2: Setup Hierarchy
+        for (const entity of entities) {
+            const node = this.entityNodes.get(entity.id);
+            if (node) {
+                if (entity.parent_id && this.entityNodes.has(entity.parent_id)) {
+                    node.parent = this.entityNodes.get(entity.parent_id)!;
+                } else {
+                    node.parent = null;
+                }
             }
         }
 
@@ -157,6 +181,14 @@ export class SceneLoader {
 
     private updateEntity(node: Node, entity: Entity) {
         const comps = entity.components;
+
+        // Apply State
+        if (entity.enabled !== undefined) {
+            node.setEnabled(entity.enabled);
+        }
+        if (entity.visible !== undefined && node instanceof Mesh) {
+            node.isVisible = entity.visible;
+        }
 
         // Apply Transform
         if (comps.transform) {
