@@ -37,4 +37,5 @@ This overview serves as the entry point to understanding the complete scope of t
 
 *   [[system-architecture]]: Explores the structural design of the platform. It details the separation of concerns, the backend Python infrastructure handling the AI layer, and the TypeScript frontend managing state and Babylon.js rendering.
 *   [[user-interaction]]: Focuses on the user experience within the AR/VR environment. It explains how high-level AI voice control integrates with low-level spatial 3D editing tools to provide a seamless prototyping workflow.
+*   [[skills]]: Acts as a handbook and operational index for AI agents. It outlines developer skills for interacting with the environment via MCP and coding custom JavaScript game behaviors.
 <!-- ai:end -->

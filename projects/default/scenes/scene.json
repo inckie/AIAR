@@ -244,118 +244,128 @@
       }
     },
     {
-      "id": "ShowcaseRedSphere_aab770",
-      "name": "ShowcaseRedSphere",
+      "id": "Sun",
+      "name": "Sun",
+      "parent_id": null,
+      "enabled": true,
+      "visible": true,
       "components": {
         "transform": {
           "position": [
-            -2.0,
-            0.6,
-            2.0
+            0,
+            5,
+            -5
           ],
           "rotation": [
-            0.0,
-            0.0,
-            0.0
+            0,
+            0,
+            0
           ],
           "scaling": [
-            1.0,
-            1.0,
-            1.0
+            1,
+            1,
+            1
           ]
         },
         "mesh": {
           "type": "sphere",
           "properties": {
-            "diameter": 1.2
+            "diameter": 2.0
           }
         },
-        "light": null,
         "material": {
           "diffuse": [
-            0.8,
-            0.1,
+            1.0,
+            0.9,
             0.1
           ],
           "emissive": [
-            0.0,
-            0.0,
-            0.0
+            0.8,
+            0.8,
+            0.1
           ],
           "specular": [
-            1.0,
-            1.0,
-            1.0
-          ]
-        }
-      }
-    },
-    {
-      "id": "ShowcaseBlueBox_adf624",
-      "name": "ShowcaseBlueBox",
-      "components": {
-        "transform": {
-          "position": [
-            2.0,
-            0.5,
-            2.0
-          ],
-          "rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scaling": [
-            1.0,
-            1.0,
-            1.0
+            0,
+            0,
+            0
           ]
         },
-        "mesh": {
-          "type": "box",
-          "properties": {
-            "size": 1.0
+        "scripts": [
+          {
+            "name": "RotateBehaviour.js",
+            "properties": {
+              "speed": 0.25,
+              "axis": [
+                0,
+                1,
+                0
+              ]
+            }
           }
-        },
-        "light": null,
-        "material": {
-          "diffuse": [
-            0.1,
-            0.3,
-            0.8
-          ],
-          "emissive": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "specular": [
-            1.0,
-            1.0,
-            1.0
-          ]
-        }
+        ]
       }
     },
     {
-      "id": "ShowcaseYellowSphere_00a0fa",
-      "name": "ShowcaseYellowSphere",
+      "id": "Planet1_Pivot",
+      "name": "Planet1_Pivot",
+      "parent_id": "Sun",
+      "enabled": true,
+      "visible": true,
       "components": {
         "transform": {
           "position": [
-            -1.0,
-            1.2,
-            3.0
+            0,
+            0,
+            0
           ],
           "rotation": [
-            0.0,
-            0.0,
-            0.0
+            0,
+            0,
+            0
           ],
           "scaling": [
-            1.0,
-            1.0,
-            1.0
+            1,
+            1,
+            1
+          ]
+        },
+        "scripts": [
+          {
+            "name": "RotateBehaviour.js",
+            "properties": {
+              "speed": 1.0,
+              "axis": [
+                0,
+                1,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "Planet1",
+      "name": "Earth",
+      "parent_id": "Planet1_Pivot",
+      "enabled": true,
+      "visible": true,
+      "components": {
+        "transform": {
+          "position": [
+            3,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scaling": [
+            1,
+            1,
+            1
           ]
         },
         "mesh": {
@@ -364,69 +374,210 @@
             "diameter": 0.8
           }
         },
-        "light": null,
         "material": {
           "diffuse": [
-            0.8,
-            0.8,
-            0.1
+            0.2,
+            0.3,
+            0.9
           ],
           "emissive": [
-            0.2,
-            0.2,
-            0.0
+            0,
+            0,
+            0
           ],
           "specular": [
-            1.0,
-            1.0,
-            1.0
+            1,
+            1,
+            1
+          ]
+        },
+        "scripts": [
+          {
+            "name": "RotateBehaviour.js",
+            "properties": {
+              "speed": 2.5,
+              "axis": [
+                0,
+                1,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "Moon_Pivot",
+      "name": "Moon_Pivot",
+      "parent_id": "Planet1",
+      "enabled": true,
+      "visible": true,
+      "components": {
+        "transform": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scaling": [
+            1,
+            1,
+            1
+          ]
+        },
+        "scripts": [
+          {
+            "name": "RotateBehaviour.js",
+            "properties": {
+              "speed": 4.0,
+              "axis": [
+                0,
+                1,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "Moon",
+      "name": "Moon",
+      "parent_id": "Moon_Pivot",
+      "enabled": true,
+      "visible": true,
+      "components": {
+        "transform": {
+          "position": [
+            1.2,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scaling": [
+            1,
+            1,
+            1
+          ]
+        },
+        "mesh": {
+          "type": "sphere",
+          "properties": {
+            "diameter": 0.3
+          }
+        },
+        "material": {
+          "diffuse": [
+            0.7,
+            0.7,
+            0.7
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "specular": [
+            0,
+            0,
+            0
           ]
         }
       }
     },
     {
-      "id": "ShowcaseGreenBox_50d285",
-      "name": "ShowcaseGreenBox",
+      "id": "Planet2_Pivot",
+      "name": "Planet2_Pivot",
+      "parent_id": "Sun",
+      "enabled": true,
+      "visible": true,
       "components": {
         "transform": {
           "position": [
-            1.0,
-            1.5,
-            3.0
+            0,
+            0,
+            0
           ],
           "rotation": [
-            0.0,
-            0.0,
-            0.0
+            0,
+            0,
+            0
           ],
           "scaling": [
-            1.0,
-            1.0,
-            1.0
+            1,
+            1,
+            1
+          ]
+        },
+        "scripts": [
+          {
+            "name": "RotateBehaviour.js",
+            "properties": {
+              "speed": 0.5,
+              "axis": [
+                0,
+                1,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "Planet2",
+      "name": "Mars",
+      "parent_id": "Planet2_Pivot",
+      "enabled": true,
+      "visible": true,
+      "components": {
+        "transform": {
+          "position": [
+            5,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scaling": [
+            1,
+            1,
+            1
           ]
         },
         "mesh": {
-          "type": "box",
+          "type": "sphere",
           "properties": {
-            "size": 0.8
+            "diameter": 0.6
           }
         },
-        "light": null,
         "material": {
           "diffuse": [
-            0.1,
-            0.7,
+            0.8,
+            0.2,
             0.1
           ],
           "emissive": [
-            0.0,
-            0.0,
-            0.0
+            0,
+            0,
+            0
           ],
           "specular": [
-            1.0,
-            1.0,
-            1.0
+            1,
+            1,
+            1
           ]
         }
       }

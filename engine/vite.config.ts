@@ -13,6 +13,10 @@ export default defineConfig({
       '/assets': {
         target: 'http://127.0.0.1:9080',
         changeOrigin: true
+      },
+      '/scripts': {
+        target: 'http://127.0.0.1:9080',
+        changeOrigin: true
       }
     }
   },

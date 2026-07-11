@@ -30,14 +30,18 @@ import {
     Entity,
     Scene as SceneModel
 } from "./types";
+import { ScriptManager } from "./ScriptManager";
 
 export class SceneLoader {
     private scene: Scene;
     private entityNodes: Map<string, Node> = new Map();
+    private lastEntityData: Map<string, Entity> = new Map();
     public onError?: (msg: string) => void;
+    private scriptManager: ScriptManager;
 
-    constructor(scene: Scene) {
+    constructor(scene: Scene, scriptManager: ScriptManager) {
         this.scene = scene;
+        this.scriptManager = scriptManager;
     }
 
     public async fetchAndUpdateScene() {
@@ -75,10 +79,12 @@ export class SceneLoader {
                 const node = this.createEntity(entity);
                 if (node) {
                     this.entityNodes.set(entity.id, node);
+                    this.lastEntityData.set(entity.id, JSON.parse(JSON.stringify(entity)));
                 }
             } else {
                 // Update existing entity
-                this.updateEntity(this.entityNodes.get(entity.id)!, entity);
+                this.updateEntity(this.entityNodes.get(entity.id)!, entity, this.lastEntityData.get(entity.id));
+                this.lastEntityData.set(entity.id, JSON.parse(JSON.stringify(entity)));
             }
         }
 
@@ -97,8 +103,10 @@ export class SceneLoader {
         // Delete entities that no longer exist in the JSON
         for (const [id, node] of this.entityNodes.entries()) {
             if (!currentIds.has(id)) {
+                this.scriptManager.detachAllFromNode(id);
                 node.dispose();
                 this.entityNodes.delete(id);
+                this.lastEntityData.delete(id);
             }
         }
     }
@@ -169,6 +177,9 @@ export class SceneLoader {
                     if (this.onError) this.onError(msg);
                     break;
             }
+        } else {
+            // Empty entity (e.g., pivot)
+            node = new TransformNode(entity.name, this.scene);
         }
 
         // If we successfully created a node, apply the rest of the components
@@ -179,7 +190,7 @@ export class SceneLoader {
         return node;
     }
 
-    private updateEntity(node: Node, entity: Entity) {
+    private updateEntity(node: Node, entity: Entity, lastEntity?: Entity) {
         const comps = entity.components;
 
         // Apply State
@@ -190,16 +201,29 @@ export class SceneLoader {
             node.isVisible = entity.visible;
         }
 
+        // Apply Scripts
+        if (comps.scripts) {
+            for (const scriptInfo of comps.scripts) {
+                this.scriptManager.attachScript(node, scriptInfo.name, scriptInfo.properties || {});
+            }
+        }
+
         // Apply Transform
         if (comps.transform) {
-            if ((node as any).scaling) {
-                (node as any).scaling = new Vector3(comps.transform.scaling[0], comps.transform.scaling[1], comps.transform.scaling[2], Space.LOCAL);
-            }
-            if ((node as any).rotation) {
-                (node as any).rotation = new Vector3(comps.transform.rotation[0], comps.transform.rotation[1], comps.transform.rotation[2], Space.LOCAL);
-            }
-            if ((node as any).position) {
-                (node as any).position = new Vector3(comps.transform.position[0], comps.transform.position[1], comps.transform.position[2]);
+            const lastTransform = lastEntity?.components?.transform;
+            const t = comps.transform;
+            
+            // Only apply if changed from last known server state (or if it's the first time)
+            if (!lastTransform || JSON.stringify(lastTransform) !== JSON.stringify(t)) {
+                if ((node as any).scaling) {
+                    (node as any).scaling = new Vector3(t.scaling[0], t.scaling[1], t.scaling[2]);
+                }
+                if ((node as any).rotation) {
+                    (node as any).rotation = new Vector3(t.rotation[0], t.rotation[1], t.rotation[2]);
+                }
+                if ((node as any).position) {
+                    (node as any).position = new Vector3(t.position[0], t.position[1], t.position[2]);
+                }
             }
         }
 

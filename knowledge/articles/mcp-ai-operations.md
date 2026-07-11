@@ -1,6 +1,7 @@
 ---
 categories:
 - system-architecture
+- skills
 created: '2026-07-04T05:38:36.882269+00:00'
 id: mcp-ai-operations
 modified: '2026-07-04T06:43:39.707168+00:00'

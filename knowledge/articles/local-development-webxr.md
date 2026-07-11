@@ -49,12 +49,22 @@ export default defineConfig({
       '/assets': {
         target: 'http://127.0.0.1:9080',
         changeOrigin: true
+      },
+      '/scripts': {
+        target: 'http://127.0.0.1:9080',
+        changeOrigin: true
       }
     }
   },
   plugins: [ mkcert() ]
 })
 ```
+
+> [!IMPORTANT]
+> **Backend Route / Controller Updates:**
+> Whenever you add new API endpoints, mount new static paths (such as `/scripts`), or introduce new controllers on the Python backend, you **MUST** update the `proxy` config in `vite.config.ts` to route them.
+> If you omit this, the frontend will try to fetch these resources from the Vite development server (port `5173`) instead of the Python backend (port `9080`), resulting in runtime fetch errors or 404s.
+
 
 ## Development Workflow
 

@@ -169,10 +169,19 @@ def read_root():
     return {"status": "AIAR Host is running"}
 
 
+# IMPORTANT: When adding new API routes, controller paths, or static file mounts (like /scripts) 
+# on the backend, you MUST update the Vite development server proxy list in 'engine/vite.config.ts'.
+# See the KB article: [[local-development-webxr]] (Local Development & WebXR Testing) for details.
+
 # Serve assets
 assets_dir_path = os.path.join(os.path.dirname(__file__), "..", "..", "projects", "default", "assets")
 os.makedirs(assets_dir_path, exist_ok=True)
 app.mount("/assets", StaticFiles(directory=assets_dir_path), name="assets")
+
+# Serve custom scripts
+scripts_dir_path = os.path.join(os.path.dirname(__file__), "..", "..", "projects", "default", "scripts")
+os.makedirs(scripts_dir_path, exist_ok=True)
+app.mount("/scripts", StaticFiles(directory=scripts_dir_path), name="scripts")
 
 # Serve the compiled frontend engine
 engine_dist_path = os.path.join(os.path.dirname(__file__), "..", "..", "engine", "dist")

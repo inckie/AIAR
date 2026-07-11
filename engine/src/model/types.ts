@@ -21,6 +21,8 @@ export type Position1 = number[] | null;
 export type Diffuse = number[];
 export type Emissive = number[];
 export type Specular = number[];
+export type Scripts = ScriptComponent[] | null;
+export type Name1 = string;
 export type Entities = Entity[];
 
 export interface Scene {
@@ -41,6 +43,7 @@ export interface Components {
   mesh?: MeshComponent | null;
   light?: LightComponent | null;
   material?: MaterialComponent | null;
+  scripts?: Scripts;
   [k: string]: unknown;
 }
 export interface TransformComponent {
@@ -68,5 +71,13 @@ export interface MaterialComponent {
   diffuse?: Diffuse;
   emissive?: Emissive;
   specular?: Specular;
+  [k: string]: unknown;
+}
+export interface ScriptComponent {
+  name: Name1;
+  properties?: Properties1;
+  [k: string]: unknown;
+}
+export interface Properties1 {
   [k: string]: unknown;
 }

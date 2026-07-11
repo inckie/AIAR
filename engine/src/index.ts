@@ -1,4 +1,5 @@
 import { SceneLoader } from "./model/SceneLoader";
+import { ScriptManager } from "./model/ScriptManager";
 import { createBaseScene } from "./core/EngineSetup";
 import { initWebXR } from "./core/WebXRSetup";
 import { DebugOverlay } from "./ui/DebugOverlay";
@@ -14,7 +15,8 @@ const init = async () => {
     const debug = new DebugOverlay();
     
     // 2. Setup Data-Driven Scene Loader
-    const sceneLoader = new SceneLoader(scene);
+    const scriptManager = new ScriptManager();
+    const sceneLoader = new SceneLoader(scene, scriptManager);
     
     // 3. Setup Error Handling
     const vrPopup = new VRPopup(scene, null as any); // We will update xr later
@@ -44,6 +46,7 @@ const init = async () => {
 
     // 7. Start Render Loop
     engine.runRenderLoop(() => {
+        scriptManager.update(engine.getDeltaTime() / 1000.0);
         scene.render();
     });
 

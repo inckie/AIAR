@@ -11,7 +11,7 @@
           "include": ["host/src/**/*.py", "host/scripts/**/*.py"]
         },
         "javascript": {
-          "include": ["engine/src/**/*.ts"]
+          "include": ["engine/src/**/*.ts", "projects/default/scripts/**/*.js"]
         }
       }
     }

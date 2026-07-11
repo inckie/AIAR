@@ -37,11 +37,17 @@ class MaterialComponent(BaseModel):
     specular: List[float] = [1.0, 1.0, 1.0]
 
 
+class ScriptComponent(BaseModel):
+    name: str
+    properties: Dict[str, Any] = Field(default_factory=dict)
+
+
 class Components(BaseModel):
     transform: Optional[TransformComponent] = None
     mesh: Optional[MeshComponent] = None
     light: Optional[LightComponent] = None
     material: Optional[MaterialComponent] = None
+    scripts: Optional[List[ScriptComponent]] = None
 
 
 class Entity(BaseModel):
