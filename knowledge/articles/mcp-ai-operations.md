@@ -4,7 +4,7 @@ categories:
 - skills
 created: '2026-07-04T05:38:36.882269+00:00'
 id: mcp-ai-operations
-modified: '2026-07-04T06:43:39.707168+00:00'
+modified: '2026-07-11T07:52:01.267258+00:00'
 tags:
 - skill
 - ai
@@ -43,6 +43,23 @@ You can manipulate the scene graph dynamically. Entities consist of a `Transform
     *   **Usage:** Reverts the scene to the state before the most recent addition, removal, or update.
 *   **`get_scene()`**
     *   **Usage:** Fetches the entire declarative JSON scene graph for inspection.
+
+### Script Management Skills
+
+AI agents can natively inspect, read, and write JavaScript (`.js`) and TypeScript (`.ts`) behaviors for the game engine via the MCP interface.
+
+*   **`list_scripts()`**
+    *   **Usage:** Returns a JSON list of all scripts currently residing in the project's scripts folder.
+*   **`get_script(filename)`**
+    *   **Usage:** Reads and returns the raw string content of a given script file (e.g., `RotateBehaviour.js`).
+*   **`save_script(filename, content)`**
+    *   **Usage:** Creates a new script or overwrites an existing one. Use this when writing custom game mechanics or modifiers. 
+*   **`delete_script(filename)`**
+    *   **Usage:** Deletes a script file from the project.
+
+**Attaching Scripts to Entities:**
+To attach a custom script to a 3D object, use the `update_entity` tool by providing a JSON payload containing the `scripts` array under components.
+*Example JSON:* `{"scripts": [{"name": "RotateBehaviour.js", "properties": {"speed": 1.5}}]}`
 
 ### Telemetry and Debugging Skills
 

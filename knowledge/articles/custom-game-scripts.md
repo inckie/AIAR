@@ -4,7 +4,7 @@ categories:
 - skills
 created: '2026-07-11T07:12:00+00:00'
 id: custom-game-scripts
-modified: '2026-07-11T07:18:06.536581+00:00'
+modified: '2026-07-11T08:57:01.472487+00:00'
 tags:
 - scripting
 - scripts
@@ -19,6 +19,8 @@ type: leaf
 # Custom Game Scripts Support
 
 AIAR features a modular, Unity-like scripting system that allows attaching custom behaviors to 3D entities in the scene. Scripts are written in standard ES Module JavaScript and executed on the client side inside the Babylon.js render loop.
+
+Note that project does not use Babylon.js scripting system and events so frontend can be replaced with other implementations as long as there is a way to run JS.
 
 ---
 
@@ -107,6 +109,14 @@ export default class CustomBehaviour {
     OnDestroy() {
         // Complete memory cleanup (removing listeners, stopping timers, etc.)
     }
+
+    /**
+     * OnClick is called when the user points at the mesh and clicks (or pulls VR trigger).
+     * Note: This is only triggered if the attached node is an AbstractMesh.
+     */
+    OnClick() {
+        // Interactivity logic here
+    }
 }
 ```
 
@@ -139,3 +149,7 @@ Properties passed to `properties` in `scene.json` (such as `speed`, `axis`, `col
 ### V. Logging
 Do not worry about accessing terminal logs on the browser—the frontend environment automatically forwards standard JavaScript logging methods and unhandled exceptions (via `console.error` hooking and `window.onerror`) directly to the Python backend's `SystemLogger` under the "Browser" subsystem.
 Therefore, if you need to trace variables or report errors in your custom script, you can simply use the native `console.error()`, `console.warn()`, or `console.info()` and they will be visible in the backend log stream readable by MCP tools.
+
+### VI. No Bare Module Imports
+Because custom scripts are fetched dynamically over the network natively by the browser without passing through a bundler, you **cannot** use bare module imports (e.g., `import { Animation } from "@babylonjs/core";`). Doing so will cause a runtime resolution error in the browser (`Failed to load or instantiate script: {}`). 
+If you need complex animation or math, you must compute it manually within the `Update(deltaTime)` loop (e.g., using simple trigonometry for easing).

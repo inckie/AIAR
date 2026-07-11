@@ -159,6 +159,80 @@ def create_mcp_server(scene_manager: SceneManager) -> FastMCP:
         return f"Failed to update state for entity '{entity_id}'."
 
     @mcp.tool()
+    def list_scripts() -> str:
+        """
+        List all available custom game scripts.
+        Returns:
+            A JSON-formatted list of script filenames.
+        """
+        import os, json
+        scripts_dir = os.path.join(os.path.dirname(scene_manager.scene_dir), "scripts")
+        if not os.path.exists(scripts_dir):
+            return "[]"
+        scripts = [f for f in os.listdir(scripts_dir) if f.endswith(('.js', '.ts'))]
+        return json.dumps(scripts)
+
+    @mcp.tool()
+    def get_script(filename: str) -> str:
+        """
+        Read the content of a custom game script.
+        Args:
+            filename: The name of the script file.
+        Returns:
+            The script content as a string.
+        """
+        import os
+        filename = os.path.basename(filename)
+        scripts_dir = os.path.join(os.path.dirname(scene_manager.scene_dir), "scripts")
+        filepath = os.path.join(scripts_dir, filename)
+        if not os.path.exists(filepath):
+            return f"Error: Script '{filename}' not found."
+        with open(filepath, "r", encoding="utf-8") as f:
+            return f.read()
+
+    @mcp.tool()
+    def save_script(filename: str, content: str) -> str:
+        """
+        Create or update a custom game script.
+        Args:
+            filename: The name of the script file (must end in .js or .ts).
+            content: The full source code content of the script.
+        Returns:
+            Confirmation string.
+        """
+        import os
+        filename = os.path.basename(filename)
+        if not filename.endswith(('.js', '.ts')):
+            return "Error: Script filename must end in .js or .ts"
+        scripts_dir = os.path.join(os.path.dirname(scene_manager.scene_dir), "scripts")
+        os.makedirs(scripts_dir, exist_ok=True)
+        filepath = os.path.join(scripts_dir, filename)
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(content)
+        return f"Successfully saved script '{filename}'."
+
+    @mcp.tool()
+    def delete_script(filename: str) -> str:
+        """
+        Delete a custom game script.
+        Args:
+            filename: The name of the script file.
+        Returns:
+            Confirmation string.
+        """
+        import os
+        filename = os.path.basename(filename)
+        scripts_dir = os.path.join(os.path.dirname(scene_manager.scene_dir), "scripts")
+        filepath = os.path.join(scripts_dir, filename)
+        if not os.path.exists(filepath):
+            return f"Error: Script '{filename}' not found."
+        try:
+            os.remove(filepath)
+            return f"Successfully deleted script '{filename}'."
+        except Exception as e:
+            return f"Error deleting script: {e}"
+
+    @mcp.tool()
     def log_tail(
         limit: int = 50, level: Optional[str] = None, subsystems: Optional[List[str]] = None
     ) -> str:
