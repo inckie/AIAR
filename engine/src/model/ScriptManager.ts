@@ -5,7 +5,7 @@
  *
  * Coordinates loading, initialization, update loops, and cleanup of custom entity scripts.
  */
-import { Node } from "@babylonjs/core";
+import { Node, AbstractMesh, ActionManager, ExecuteCodeAction } from "@babylonjs/core";
 
 export interface ScriptInstance {
     Start?: () => void;
@@ -13,6 +13,7 @@ export interface ScriptInstance {
     OnEnable?: () => void;
     OnDisable?: () => void;
     OnDestroy?: () => void;
+    OnClick?: () => void;
 }
 
 export class ScriptManager {
@@ -49,6 +50,19 @@ export class ScriptManager {
             // Lifecycle bindings
             if (instance.Start) {
                 instance.Start();
+            }
+
+            // Click interaction binding
+            if (instance.OnClick && node instanceof AbstractMesh) {
+                if (!node.actionManager) {
+                    node.actionManager = new ActionManager(node.getScene());
+                }
+                node.actionManager.registerAction(
+                    new ExecuteCodeAction(
+                        ActionManager.OnPickTrigger,
+                        () => { instance.OnClick!(); }
+                    )
+                );
             }
 
             // Babylon.js specific lifecycle hooks
