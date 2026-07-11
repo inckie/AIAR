@@ -1,0 +1,19 @@
+{
+  "sources": {
+    "wikiknowledge": {
+      "type": "source-code",
+      "default_path": "../",
+      "knowledge_bases": {
+        "default": "self"
+      },
+      "languages": {
+        "python": {
+          "include": ["host/src/**/*.py", "host/scripts/**/*.py"]
+        },
+        "javascript": {
+          "include": ["engine/src/**/*.ts"]
+        }
+      }
+    }
+  }
+}
