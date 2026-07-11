@@ -2,6 +2,13 @@ import time
 from typing import List, Optional
 from pydantic import BaseModel
 
+LEVEL_SEVERITY = {
+    "DEBUG": 0,
+    "INFO": 1,
+    "WARNING": 2,
+    "ERROR": 3,
+}
+
 
 class LogEntry(BaseModel):
     timestamp: float
@@ -29,6 +36,9 @@ class SystemLogger:
         # Also print to standard output for local console viewing
         print(f"[{entry.level}] [{entry.subsystem}] {entry.message}")
 
+    def debug(self, subsystem: str, message: str):
+        self._add_log("DEBUG", subsystem, message)
+
     def info(self, subsystem: str, message: str):
         self._add_log("INFO", subsystem, message)
 
@@ -42,13 +52,17 @@ class SystemLogger:
         self,
         limit: int = 50,
         level: Optional[str] = None,
-        subsystem: Optional[str] = None,
+        subsystems: Optional[List[str]] = None,
     ) -> List[LogEntry]:
         results = self.entries
         if level:
-            results = [r for r in results if r.level == level.upper()]
-        if subsystem:
-            results = [r for r in results if r.subsystem.lower() == subsystem.lower()]
+            req_severity = LEVEL_SEVERITY.get(level.upper(), 0)
+            results = [r for r in results if LEVEL_SEVERITY.get(r.level.upper(), 0) >= req_severity]
+        if subsystems:
+            if isinstance(subsystems, str):
+                subsystems = [subsystems]
+            subsystems_lower = {s.lower() for s in subsystems}
+            results = [r for r in results if r.subsystem.lower() in subsystems_lower]
 
         return results[-limit:]
 
@@ -56,13 +70,17 @@ class SystemLogger:
         self,
         timestamp: float,
         level: Optional[str] = None,
-        subsystem: Optional[str] = None,
+        subsystems: Optional[List[str]] = None,
     ) -> List[LogEntry]:
         results = [r for r in self.entries if r.timestamp >= timestamp]
         if level:
-            results = [r for r in results if r.level == level.upper()]
-        if subsystem:
-            results = [r for r in results if r.subsystem.lower() == subsystem.lower()]
+            req_severity = LEVEL_SEVERITY.get(level.upper(), 0)
+            results = [r for r in results if LEVEL_SEVERITY.get(r.level.upper(), 0) >= req_severity]
+        if subsystems:
+            if isinstance(subsystems, str):
+                subsystems = [subsystems]
+            subsystems_lower = {s.lower() for s in subsystems}
+            results = [r for r in results if r.subsystem.lower() in subsystems_lower]
 
         return results
 

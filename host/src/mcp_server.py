@@ -111,38 +111,38 @@ def create_mcp_server(scene_manager: SceneManager) -> FastMCP:
 
     @mcp.tool()
     def log_tail(
-        limit: int = 50, level: Optional[str] = None, subsystem: Optional[str] = None
+        limit: int = 50, level: Optional[str] = None, subsystems: Optional[List[str]] = None
     ) -> str:
         """
         Fetch the most recent log entries.
         Args:
             limit: Maximum number of entries to return.
-            level: Optional filter by level (e.g. 'INFO', 'ERROR').
-            subsystem: Optional filter by subsystem (e.g. 'Scene', 'Voice', 'AI').
+            level: Optional filter by minimum level (e.g. 'DEBUG', 'INFO', 'WARNING', 'ERROR').
+            subsystems: Optional filter list of subsystems (e.g. ['Scene', 'Voice', 'AI']).
         Returns:
             A JSON-formatted string of log entries.
         """
         import json
 
-        logs = logger.get_tail(limit, level, subsystem)
+        logs = logger.get_tail(limit, level, subsystems)
         return json.dumps([l.model_dump() for l in logs], indent=2)
 
     @mcp.tool()
     def log_since(
-        timestamp: float, level: Optional[str] = None, subsystem: Optional[str] = None
+        timestamp: float, level: Optional[str] = None, subsystems: Optional[List[str]] = None
     ) -> str:
         """
         Fetch all log entries since a given Unix timestamp.
         Args:
             timestamp: The Unix timestamp (e.g. 1700000000.0).
-            level: Optional filter by level (e.g. 'INFO', 'ERROR').
-            subsystem: Optional filter by subsystem (e.g. 'Scene', 'Voice', 'AI').
+            level: Optional filter by minimum level (e.g. 'DEBUG', 'INFO', 'WARNING', 'ERROR').
+            subsystems: Optional filter list of subsystems (e.g. ['Scene', 'Voice', 'AI']).
         Returns:
             A JSON-formatted string of log entries.
         """
         import json
 
-        logs = logger.get_since(timestamp, level, subsystem)
+        logs = logger.get_since(timestamp, level, subsystems)
         return json.dumps([l.model_dump() for l in logs], indent=2)
 
     return mcp
